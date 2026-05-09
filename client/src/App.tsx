@@ -13,6 +13,7 @@ import TravelPage from "./pages/TravelPage";
 import HospitalityPage from "./pages/HospitalityPage";
 import DashboardPage from "./pages/DashboardPage";
 import AuthPage from "./pages/AuthPage";
+import AboutPage from "./pages/AboutPage";
 
 function Router() {
   return (
@@ -27,6 +28,7 @@ function Router() {
       <Route path="/travel" component={TravelPage} />
       <Route path="/hospitality" component={HospitalityPage} />
       <Route path="/auth" component={AuthPage} />
+      <Route path="/about" component={AboutPage} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>
