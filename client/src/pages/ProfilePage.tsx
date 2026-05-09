@@ -3,13 +3,38 @@ import Header from "@/components/shared/Header";
 import Footer from "@/components/shared/Footer";
 import { Button } from "@/components/ui/button";
 import { BadgeCheck, Bell, Mail, User } from "lucide-react";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 
 export default function ProfilePage() {
-  const profile = {
-    name: "John Doe",
-    email: "john@example.com",
-    tier: "Gold",
-  };
+  const defaultProfile = useMemo(
+    () => ({
+      name: "John Doe",
+      email: "john@example.com",
+      tier: "Gold",
+    }),
+    []
+  );
+
+  const [profile, setProfile] = useState(defaultProfile);
+  const [editOpen, setEditOpen] = useState(false);
+  const [draft, setDraft] = useState({ name: "", email: "" });
+
+  useEffect(() => {
+    const raw = localStorage.getItem("biome_profile");
+    if (!raw) return;
+    try {
+      const next = JSON.parse(raw) as Partial<typeof defaultProfile>;
+      setProfile((p) => ({
+        ...p,
+        ...next,
+      }));
+    } catch {
+      return;
+    }
+  }, [defaultProfile]);
 
   const stats = [
     { label: "Total Savings", value: "₹24,580" },
@@ -55,7 +80,14 @@ export default function ProfilePage() {
               </div>
 
               <div className="flex gap-3 w-full sm:w-auto">
-                <Button variant="outline" className="flex-1 sm:flex-none">
+                <Button
+                  variant="outline"
+                  className="flex-1 sm:flex-none"
+                  onClick={() => {
+                    setDraft({ name: profile.name, email: profile.email });
+                    setEditOpen(true);
+                  }}
+                >
                   Edit Profile
                 </Button>
                 <Button className="flex-1 sm:flex-none bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white">
@@ -142,7 +174,68 @@ export default function ProfilePage() {
       </main>
 
       <Footer />
+
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Edit profile</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">Name</label>
+              <Input
+                value={draft.name}
+                onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))}
+                placeholder="Your name"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">Email</label>
+              <Input
+                type="email"
+                value={draft.email}
+                onChange={(e) => setDraft((d) => ({ ...d, email: e.target.value }))}
+                placeholder="you@example.com"
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setEditOpen(false);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white"
+              onClick={() => {
+                const name = draft.name.trim();
+                const email = draft.email.trim();
+                if (!name || !email) {
+                  toast.error("Please fill name and email.");
+                  return;
+                }
+                const okEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+                if (!okEmail) {
+                  toast.error("Please enter a valid email.");
+                  return;
+                }
+                const next = { ...profile, name, email };
+                setProfile(next);
+                localStorage.setItem("biome_profile", JSON.stringify({ name, email }));
+                toast.success("Profile updated.");
+                setEditOpen(false);
+              }}
+            >
+              Save changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
-
