@@ -89,13 +89,12 @@ export default function Home() {
               variants={itemVariants}
               className="flex flex-col sm:flex-row gap-4 justify-center mb-12"
             >
-              <Link href="/search">
-                <a>
-                  <Button className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-8 py-6 text-lg font-semibold rounded-lg">
-                    Start Searching
-                    <ArrowRight className="ml-2 w-5 h-5" />
-                  </Button>
-                </a>
+              <Link
+                href="/search"
+                className="inline-flex items-center justify-center bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-8 py-6 text-lg font-semibold rounded-lg"
+              >
+                Start Searching
+                <ArrowRight className="ml-2 w-5 h-5" />
               </Link>
               <Button
                 variant="outline"
@@ -352,13 +351,12 @@ export default function Home() {
             <p className="text-xl text-white/90 mb-8">
               Join thousands of users who are already saving with Biome
             </p>
-            <Link href="/search">
-              <a>
-                <Button className="bg-white text-orange-600 hover:bg-gray-100 px-8 py-6 text-lg font-semibold">
-                  Start Searching Now
-                  <ArrowRight className="ml-2 w-5 h-5" />
-                </Button>
-              </a>
+            <Link
+              href="/search"
+              className="inline-flex items-center justify-center bg-white text-orange-600 hover:bg-gray-100 px-8 py-6 text-lg font-semibold rounded-md"
+            >
+              Start Searching Now
+              <ArrowRight className="ml-2 w-5 h-5" />
             </Link>
           </motion.div>
         </div>

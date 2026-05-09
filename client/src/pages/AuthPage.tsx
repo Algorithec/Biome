@@ -46,13 +46,11 @@ export default function AuthPage() {
         className="w-full max-w-md relative z-10"
       >
         {/* Logo */}
-        <Link href="/">
-          <a className="flex items-center justify-center gap-2 mb-8">
-            <div className="text-3xl">⚡</div>
-            <span className="font-bold text-2xl bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
-              Biome
-            </span>
-          </a>
+        <Link href="/" className="flex items-center justify-center gap-2 mb-8">
+          <div className="text-3xl">⚡</div>
+          <span className="font-bold text-2xl bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
+            Biome
+          </span>
         </Link>
 
         {/* Card */}
