@@ -20,7 +20,7 @@ export default function Footer() {
         { label: 'About', href: '/about' },
         { label: 'Blog', href: '#' },
         { label: 'Careers', href: '#' },
-        { label: 'Contact', href: '#' },
+        { label: 'Contact', href: '/contact' },
       ],
     },
     {
@@ -110,7 +110,7 @@ export default function Footer() {
         {/* Bottom Section */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-sm text-muted-foreground">
-            © {currentYear} Biome. All rights reserved. | Made with ❤️ by TESSARC
+            © {currentYear} Biome. All rights reserved. | Made with ❤️ by Algorithec
           </p>
           <div className="flex gap-4">
             <button className="text-sm text-muted-foreground hover:text-amber-600 transition-colors">
