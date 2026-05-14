@@ -3,6 +3,8 @@
  * Handles price aggregation, tracking, and prediction
  */
 
+import { priceAlertsRepo } from "../repositories";
+
 interface PriceData {
   itemId: string;
   platform: string;
@@ -21,13 +23,12 @@ interface PriceAlert {
   targetPrice: number;
   domain: string;
   userId: string;
-  createdAt: Date;
+  createdAt: string;
   isActive: boolean;
 }
 
 class PriceService {
   private priceCache: Map<string, PriceData[]> = new Map();
-  private alerts: Map<string, PriceAlert> = new Map();
 
   /**
    * Aggregate prices from multiple platforms
@@ -127,36 +128,34 @@ class PriceService {
    */
   async createPriceAlert(alert: Omit<PriceAlert, 'id' | 'createdAt'>): Promise<PriceAlert> {
     try {
-      const id = `alert_${Date.now()}`;
-      const newAlert: PriceAlert = {
-        ...alert,
-        id,
-        createdAt: new Date(),
-      };
-
-      this.alerts.set(id, newAlert);
-      return newAlert;
+      return await priceAlertsRepo.create(alert);
     } catch (error) {
       console.error('Failed to create price alert:', error);
       throw error;
     }
   }
 
+  async listActiveAlerts(userId: string): Promise<PriceAlert[]> {
+    return priceAlertsRepo.listActive(userId);
+  }
+
+  async deactivateAlert(alertId: string, userId: string) {
+    return priceAlertsRepo.deactivate(alertId, userId);
+  }
+
   /**
    * Check and trigger price alerts
    */
-  async checkPriceAlerts(): Promise<PriceAlert[]> {
+  async checkPriceAlerts(): Promise<Array<{ alert: PriceAlert; newPrice: number }>> {
     try {
-      const triggeredAlerts: PriceAlert[] = [];
+      const triggeredAlerts: Array<{ alert: PriceAlert; newPrice: number }> = [];
+      const allActive = await priceAlertsRepo.listAllActive(200);
 
-      for (const alert of Array.from(this.alerts.values())) {
-        if (!alert.isActive) continue;
-
+      for (const alert of allActive) {
         const bestPrice = await this.getBestPrice(alert.itemId);
         if (bestPrice && bestPrice.price <= alert.targetPrice) {
-          triggeredAlerts.push(alert);
-          // Mark as triggered
-          alert.isActive = false;
+          triggeredAlerts.push({ alert, newPrice: bestPrice.price });
+          await priceAlertsRepo.deactivate(alert.id, alert.userId);
         }
       }
 
