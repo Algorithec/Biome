@@ -24,12 +24,12 @@ export function createSocketServer(httpServer: HttpServer) {
   setInterval(async () => {
     try {
       const triggered = await priceService.checkPriceAlerts();
-      for (const alert of triggered) {
+      for (const item of triggered) {
         io.emit("price-alert", {
-          alertId: alert.id,
-          itemId: alert.itemId,
-          newPrice: alert.currentPrice,
-          platform: alert.platform,
+          alertId: item.alert.id,
+          itemId: item.alert.itemId,
+          newPrice: item.newPrice,
+          platform: item.alert.platform,
         });
       }
     } catch {
