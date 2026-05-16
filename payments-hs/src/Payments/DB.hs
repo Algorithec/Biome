@@ -8,6 +8,7 @@ module Payments.DB
     lookupIdempotency,
     insertIntent,
     getIntent,
+    listOpenIntents,
     updateIntentStatus,
     insertWebhookEvent,
   )
@@ -17,7 +18,6 @@ import Control.Exception (bracket)
 import Data.Aeson (Value, encode)
 import qualified Data.ByteString.Lazy as LBS
 import Data.Text (Text)
-import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Database.SQLite.Simple
 import Database.SQLite.Simple.FromRow
@@ -85,6 +85,16 @@ getIntent db iid = do
     [r] -> pure (Just (fromRowIntent r))
     _ -> pure Nothing
 
+listOpenIntents :: Db -> Int -> IO [(Text, Text)]
+listOpenIntents db limitN = do
+  rows <-
+    query
+      (conn db)
+      "SELECT intent_id, order_id FROM payment_intents WHERE status IN ('CREATED','ACTIVE') ORDER BY updated_at ASC LIMIT ?"
+      (Only limitN) ::
+      IO [Only2]
+  pure (map (\(Only2 a b) -> (a, b)) rows)
+
 updateIntentStatus :: Db -> Text -> IntentStatus -> Text -> IO ()
 updateIntentStatus db orderIdV newStatus updatedAtIso = do
   execute
@@ -103,6 +113,11 @@ insertWebhookEvent db eventId orderIdV eventType sigOk payload createdAtIso = do
     (eventId, orderIdV, eventType, sigVal, payloadStr, createdAtIso)
 
 data IntentRow = IntentRow Text (Maybe Text) Text Text Double Text Text Text Text
+
+data Only2 = Only2 Text Text
+
+instance FromRow Only2 where
+  fromRow = Only2 <$> field <*> field
 
 instance FromRow IntentRow where
   fromRow = IntentRow <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
