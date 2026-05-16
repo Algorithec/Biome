@@ -33,7 +33,13 @@ async function startServer() {
       credentials: true,
     })
   );
-  app.use(express.json());
+  app.use(
+    express.json({
+      verify: (req, _res, buf) => {
+        req.rawBody = buf;
+      },
+    })
+  );
   app.use(cookieParser());
   app.use(attachRequestContext());
   app.use(createRateLimiter());
