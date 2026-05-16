@@ -11,6 +11,7 @@ import scrapeRouter from "./scrape";
 import foodRouter from "./food";
 import ecommerceRouter from "./ecommerce";
 import ridesRouter from "./rides";
+import paymentsRouter from "./payments";
 import { searchEngine } from "../services/searchEngine";
 
 const router = Router();
@@ -27,6 +28,7 @@ router.use("/", healthRouter);
 router.use("/food", foodRouter);
 router.use("/ecommerce", ecommerceRouter);
 router.use("/rides", ridesRouter);
+router.use("/payments", paymentsRouter);
 
 router.post("/ecommerce/search", async (req: Request, res: Response) => {
   const query = typeof req.body?.query === "string" ? req.body.query : "";
