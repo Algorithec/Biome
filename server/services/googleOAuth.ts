@@ -14,32 +14,30 @@ function requiredEnv(name: string) {
 }
 
 export function isGoogleConfigured() {
-  return Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET && process.env.GOOGLE_REDIRECT_URI);
+  return Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
 }
 
 export function createGoogleAuthState() {
   return crypto.randomBytes(16).toString("hex");
 }
 
-export function buildGoogleAuthUrl(state: string) {
+export function buildGoogleAuthUrl(input: { state: string; redirectUri: string }) {
   const clientId = requiredEnv("GOOGLE_CLIENT_ID");
-  const redirectUri = requiredEnv("GOOGLE_REDIRECT_URI");
 
   const url = new URL("https://accounts.google.com/o/oauth2/v2/auth");
   url.searchParams.set("client_id", clientId);
-  url.searchParams.set("redirect_uri", redirectUri);
+  url.searchParams.set("redirect_uri", input.redirectUri);
   url.searchParams.set("response_type", "code");
   url.searchParams.set("scope", "openid email profile");
-  url.searchParams.set("state", state);
+  url.searchParams.set("state", input.state);
   url.searchParams.set("access_type", "offline");
   url.searchParams.set("prompt", "consent");
   return url.toString();
 }
 
-export async function exchangeCodeForProfile(input: { code: string }) {
+export async function exchangeCodeForProfile(input: { code: string; redirectUri: string }) {
   const clientId = requiredEnv("GOOGLE_CLIENT_ID");
   const clientSecret = requiredEnv("GOOGLE_CLIENT_SECRET");
-  const redirectUri = requiredEnv("GOOGLE_REDIRECT_URI");
 
   const tokenResp = await fetch("https://oauth2.googleapis.com/token", {
     method: "POST",
@@ -48,7 +46,7 @@ export async function exchangeCodeForProfile(input: { code: string }) {
       code: input.code,
       client_id: clientId,
       client_secret: clientSecret,
-      redirect_uri: redirectUri,
+      redirect_uri: input.redirectUri,
       grant_type: "authorization_code",
     }),
   });
@@ -64,4 +62,3 @@ export async function exchangeCodeForProfile(input: { code: string }) {
   const profile = (await profileResp.json()) as GoogleProfile;
   return profile;
 }
-

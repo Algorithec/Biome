@@ -16,13 +16,25 @@ function signToken(payload: { id: string; email?: string; phone?: string; name?:
   return jwt.sign(payload, getJwtSecret(), { algorithm: "HS256", expiresIn: "7d" });
 }
 
+function getFrontendBaseUrl(req: Request) {
+  const fromEnv = process.env.FRONTEND_URL;
+  if (fromEnv) return fromEnv.replace(/\/+$/, "");
+  return `${req.protocol}://${req.get("host")}`;
+}
+
+function getGoogleRedirectUri(req: Request) {
+  const fromEnv = process.env.GOOGLE_REDIRECT_URI;
+  if (fromEnv) return fromEnv;
+  return `${req.protocol}://${req.get("host")}/auth/google/callback`;
+}
+
 const router = Router();
 const emailSender = createEmailSender();
 const smsSender = createSmsSender();
 
 router.get("/google", (_req: Request, res: Response) => {
   if (!isGoogleConfigured()) {
-    res.redirect("/auth?error=google_not_configured");
+    res.redirect(`${getFrontendBaseUrl(_req)}/auth?error=google_not_configured`);
     return;
   }
   const state = createGoogleAuthState();
@@ -32,7 +44,7 @@ router.get("/google", (_req: Request, res: Response) => {
     sameSite: "lax",
     maxAge: 10 * 60 * 1000,
   });
-  res.redirect(buildGoogleAuthUrl(state));
+  res.redirect(buildGoogleAuthUrl({ state, redirectUri: getGoogleRedirectUri(_req) }));
 });
 
 router.get("/google/callback", async (req: Request, res: Response) => {
@@ -53,7 +65,7 @@ router.get("/google/callback", async (req: Request, res: Response) => {
     return;
   }
 
-  const profile = await exchangeCodeForProfile({ code: query.data.code });
+  const profile = await exchangeCodeForProfile({ code: query.data.code, redirectUri: getGoogleRedirectUri(req) });
   if (!profile.email) {
     res.status(400).json({ error: "GOOGLE_NO_EMAIL" });
     return;
@@ -68,7 +80,7 @@ router.get("/google/callback", async (req: Request, res: Response) => {
     sameSite: "lax",
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
-  res.redirect("/profile");
+  res.redirect(`${getFrontendBaseUrl(req)}/profile`);
 });
 
 router.post("/login", async (req: Request, res: Response) => {
