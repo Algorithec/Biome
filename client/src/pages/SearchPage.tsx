@@ -1,28 +1,54 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Filter, SortAsc, Grid, List } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import Header from '@/components/shared/Header';
-import Footer from '@/components/shared/Footer';
-import AISearchInput from '@/components/ai/AISearchInput';
-import AIRecommendationCard from '@/components/ai/AIRecommendationCard';
+import { useEffect, useRef, useState } from 'react';
+import { ArrowLeft, ArrowRight, CarFront, History, House, Menu, Pizza } from 'lucide-react';
+import { Link, useLocation } from 'wouter';
 import apiClient from '@/services/api';
 import type { BackendSearchResult } from '@/types';
 
 export default function SearchPage() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [showFilters, setShowFilters] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<BackendSearchResult | null>(null);
+  const [promptText, setPromptText] = useState('');
+  const [showSidebar, setShowSidebar] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
+  const inputRef = useRef<HTMLTextAreaElement | null>(null);
+  const [location, setLocation] = useLocation();
+
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 1024px)');
+    const update = () => setIsDesktop(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
+
+  useEffect(() => {
+    const input = inputRef.current;
+    if (!input) return;
+    const resize = () => {
+      const maxHeight = 78;
+      input.style.height = '26px';
+      input.style.height = `${Math.min(input.scrollHeight, maxHeight)}px`;
+      if (input.scrollHeight > maxHeight) input.scrollTop = input.scrollHeight;
+    };
+    resize();
+    window.addEventListener('resize', resize);
+    return () => window.removeEventListener('resize', resize);
+  }, [promptText]);
+
+  useEffect(() => {
+    const input = inputRef.current;
+    if (!input || document.activeElement !== input) return;
+    input.setSelectionRange(input.value.length, input.value.length);
+  }, [promptText]);
 
   const handleSearch = async (query: string) => {
-    setSearchQuery(query);
+    const q = query.trim();
+    if (!q) return;
     setIsLoading(true);
     setError(null);
     try {
-      const resp = await apiClient.post<BackendSearchResult>('/search', { query });
+      const resp = await apiClient.post<BackendSearchResult>('/search', { query: q });
       setResult(resp.data);
     } catch (e) {
       setResult(null);
@@ -33,173 +59,204 @@ export default function SearchPage() {
   };
 
   const recommendations = result?.ai.recommendations ?? [];
-  const totalSavings = recommendations.reduce(
-    (sum: number, r: BackendSearchResult['ai']['recommendations'][number]) => {
-    const list = r.item.listPrice?.amount;
-    const final = r.item.finalPrice.amount;
-    return sum + (list && list > final ? list - final : 0);
-    },
-    0
-  );
+  const recentChats = ['Book a ride to airport', 'Order pizza near me', 'Best phone under 30k', 'Compare iPhone 15 prices'];
+
+  const activePage: 'home' | 'history' | 'food' | 'rides' = location.startsWith('/history')
+    ? 'history'
+    : location.startsWith('/food')
+      ? 'food'
+      : location.startsWith('/rides')
+        ? 'rides'
+        : 'home';
+
+  const sidebarOpen = isDesktop || showSidebar;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-amber-50/30 to-white">
-      <Header />
+    <div className="mobile-stage">
+      <div className="fit-shell">
+        <div className="phone-screen">
+          <section className={`screen home-screen ${sidebarOpen ? 'sidebar-open' : ''}`}>
+            <div className="home-main">
+              <header className="home-header">
+                <button
+                  aria-label="Open sidebar"
+                  className="home-menu-button"
+                  type="button"
+                  onClick={() => setShowSidebar(true)}
+                >
+                  <Menu size={26} strokeWidth={2.1} />
+                </button>
+              </header>
 
-      {/* Search Section */}
-      <section className="py-12 bg-white border-b border-amber-100">
-        <div className="container">
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="max-w-3xl mx-auto"
-          >
-            <h1 className="text-3xl md:text-4xl font-bold mb-6 text-center">
-              Find Your Perfect Deal
-            </h1>
-            <AISearchInput
-              onSearch={handleSearch}
-              placeholder="Search for products, food, rides, flights, hotels..."
-              showVoice={true}
-              showSuggestions={true}
-            />
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Results Section */}
-      <section className="py-12">
-        <div className="container">
-          {searchQuery && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="mb-8"
-            >
-              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
-                <div>
-                  <h2 className="text-2xl font-bold mb-2">Search Results</h2>
-                  <p className="text-muted-foreground">
-                    Showing AI-optimized recommendations for "{searchQuery}"
-                  </p>
+              <div className="home-content">
+                <div className="home-copy">
+                  <h2 className="home-title">
+                    <span>What do you want to</span>
+                    <span className="home-title-accent">choose today?</span>
+                  </h2>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  {/* View Mode Toggle */}
-                  <div className="flex gap-2 bg-gray-100 rounded-lg p-1">
-                    <button
-                      onClick={() => setViewMode('grid')}
-                      className={`p-2 rounded transition-colors ${
-                        viewMode === 'grid'
-                          ? 'bg-white shadow-sm'
-                          : 'hover:bg-gray-200'
-                      }`}
-                    >
-                      <Grid className="w-5 h-5" />
-                    </button>
-                    <button
-                      onClick={() => setViewMode('list')}
-                      className={`p-2 rounded transition-colors ${
-                        viewMode === 'list'
-                          ? 'bg-white shadow-sm'
-                          : 'hover:bg-gray-200'
-                      }`}
-                    >
-                      <List className="w-5 h-5" />
+                <div className="home-quick-actions">
+                  <button className="home-pill" type="button" onClick={() => setLocation('/rides')}>
+                    <CarFront size={18} strokeWidth={2.1} />
+                    <span>Book a ride</span>
+                  </button>
+                  <button className="home-pill" type="button" onClick={() => setLocation('/food')}>
+                    <Pizza size={18} strokeWidth={2.1} />
+                    <span>Order pizza</span>
+                  </button>
+                </div>
+
+                <form
+                  className="home-prompt-wrap"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    handleSearch(promptText);
+                    inputRef.current?.focus();
+                  }}
+                >
+                  <div className="home-prompt-card">
+                    <textarea
+                      className="home-prompt-input"
+                      ref={inputRef}
+                      onChange={(e) => setPromptText(e.target.value)}
+                      placeholder="Ask Algorithec"
+                      rows={1}
+                      value={promptText}
+                    />
+                    <button className="home-prompt-send" disabled={!promptText.trim() || isLoading} type="submit">
+                      <ArrowRight size={22} strokeWidth={2.5} />
                     </button>
                   </div>
+                </form>
 
-                  {/* Sort Button */}
-                  <Button variant="outline" size="sm" className="gap-2">
-                    <SortAsc className="w-4 h-4" />
-                    Sort
-                  </Button>
+                {error ? <div className="mt-6 text-sm text-red-600">{error}</div> : null}
+                {isLoading ? <div className="mt-6 text-sm text-muted-foreground">Thinking…</div> : null}
 
-                  {/* Filter Button */}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="gap-2"
-                    onClick={() => setShowFilters(!showFilters)}
-                  >
-                    <Filter className="w-4 h-4" />
-                    Filter
-                  </Button>
+                {!isLoading && recommendations.length > 0 && (
+                  <div className="mt-6 w-full max-w-[620px] text-left">
+                    <div className="rounded-2xl border border-amber-100 bg-white/90 p-4 shadow-sm">
+                      <div className="text-sm font-semibold text-foreground">Best picks</div>
+                      <div className="mt-3 space-y-2">
+                        {recommendations.slice(0, 5).map((rec) => (
+                          <button
+                            key={rec.item.id}
+                            type="button"
+                            className="w-full rounded-xl border border-amber-100 bg-white px-3 py-3 text-left hover:bg-amber-50 transition-colors"
+                            onClick={() => window.open(rec.item.itemUrl, '_blank')}
+                          >
+                            <div className="flex items-center justify-between gap-3">
+                              <div className="min-w-0">
+                                <div className="truncate font-semibold text-foreground">{rec.item.name}</div>
+                                <div className="text-xs text-muted-foreground truncate">{rec.item.provider}</div>
+                              </div>
+                              <div className="flex-none font-bold text-foreground">
+                                ₹{rec.item.finalPrice.amount.toLocaleString()}
+                              </div>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                      <div className="mt-3 text-xs text-muted-foreground">
+                        cache: {result?.cache.hit ? 'HIT' : 'MISS'}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <p className="home-footer-note">Engineered by Algorithec</p>
+            </div>
+
+            {!isDesktop && showSidebar ? (
+              <button aria-label="Close sidebar" className="home-sidebar-overlay" type="button" onClick={() => setShowSidebar(false)} />
+            ) : null}
+
+            {sidebarOpen ? (
+              <aside className="home-sidebar">
+                <div>
+                  <h3 className="home-sidebar-title">Algorithec</h3>
                 </div>
-              </div>
-
-              {/* Results Grid */}
-              {isLoading && (
-                <div className="py-16 text-center text-muted-foreground">Loading results...</div>
-              )}
-
-              {error && <div className="py-8 text-center text-red-600">{error}</div>}
-
-              <div
-                className={`grid gap-6 ${
-                  viewMode === 'grid'
-                    ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
-                    : 'grid-cols-1'
-                }`}
-              >
-                {!isLoading &&
-                  !error &&
-                  recommendations.map((rec, idx) => (
-                    <AIRecommendationCard
-                      key={rec.item.id}
-                      title={rec.item.name}
-                      description={rec.reason}
-                      savings={
-                        rec.item.listPrice?.amount && rec.item.listPrice.amount > rec.item.finalPrice.amount
-                          ? rec.item.listPrice.amount - rec.item.finalPrice.amount
-                          : 0
-                      }
-                      confidence={rec.confidence}
-                      platform={rec.item.provider}
-                      icon="✨"
-                      delay={idx * 0.1}
-                      onViewDetails={() => window.open(rec.item.itemUrl, '_blank')}
-                    />
-                  ))}
-              </div>
-
-              {/* Total Savings */}
-              {!isLoading && !error && result && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                  className="mt-12 p-8 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 text-center"
-                >
-                  <p className="text-muted-foreground mb-2">Total Savings Potential</p>
-                  <p className="text-5xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
-                    ₹{totalSavings.toLocaleString()}
-                  </p>
-                  <p className="text-muted-foreground mt-2">
-                    cache: {result.cache.hit ? 'HIT' : 'MISS'}
-                  </p>
-                </motion.div>
-              )}
-            </motion.div>
-          )}
-
-          {!searchQuery && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-center py-20"
-            >
-              <div className="text-6xl mb-4">🔍</div>
-              <h2 className="text-2xl font-bold mb-2">Start Searching</h2>
-              <p className="text-muted-foreground">
-                Use the search bar above to find the best deals across all platforms
-              </p>
-            </motion.div>
-          )}
+                <nav className="home-sidebar-nav" aria-label="Sidebar navigation">
+                  <Link
+                    className={`home-sidebar-link ${activePage === 'home' ? 'home-sidebar-link-active' : ''}`}
+                    href="/home"
+                    onClick={() => setShowSidebar(false)}
+                  >
+                    <House size={22} strokeWidth={2.1} />
+                    <span>Home</span>
+                  </Link>
+                  <Link
+                    className={`home-sidebar-link ${activePage === 'history' ? 'home-sidebar-link-active' : ''}`}
+                    href="/history"
+                    onClick={() => setShowSidebar(false)}
+                  >
+                    <History size={22} strokeWidth={2.1} />
+                    <span>History</span>
+                  </Link>
+                  <Link
+                    className={`home-sidebar-link ${activePage === 'food' ? 'home-sidebar-link-active' : ''}`}
+                    href="/food"
+                    onClick={() => setShowSidebar(false)}
+                  >
+                    <Pizza size={22} strokeWidth={2.1} />
+                    <span>Food</span>
+                  </Link>
+                  <Link
+                    className={`home-sidebar-link ${activePage === 'rides' ? 'home-sidebar-link-active' : ''}`}
+                    href="/rides"
+                    onClick={() => setShowSidebar(false)}
+                  >
+                    <CarFront size={22} strokeWidth={2.1} />
+                    <span>Rides</span>
+                  </Link>
+                </nav>
+                <div className="mt-2">
+                  <div className="text-sm font-semibold text-foreground mb-2">Recent</div>
+                  <div className="space-y-2">
+                    {recentChats.map((c) => (
+                      <button
+                        key={c}
+                        type="button"
+                        className="w-full text-left rounded-lg px-2 py-2 text-sm text-foreground hover:bg-amber-50"
+                        onClick={() => {
+                          setPromptText(c);
+                          setShowSidebar(false);
+                          window.requestAnimationFrame(() => inputRef.current?.focus());
+                        }}
+                      >
+                        {c}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="mt-auto">
+                  <button
+                    type="button"
+                    className="w-full rounded-full border border-amber-200 bg-white px-4 py-3 font-semibold text-foreground"
+                    onClick={() => {
+                      setShowSidebar(false);
+                      setLocation('/profile');
+                    }}
+                  >
+                    Profile
+                  </button>
+                  {!isDesktop ? (
+                    <button
+                      type="button"
+                      className="mt-3 w-full flex items-center justify-center gap-2 text-sm text-muted-foreground"
+                      onClick={() => setShowSidebar(false)}
+                    >
+                      <ArrowLeft className="w-4 h-4" />
+                      Close
+                    </button>
+                  ) : null}
+                </div>
+              </aside>
+            ) : null}
+          </section>
         </div>
-      </section>
-
-      <Footer />
+      </div>
     </div>
   );
 }
