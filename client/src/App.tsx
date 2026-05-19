@@ -17,7 +17,7 @@ import AboutPage from "./pages/AboutPage";
 import ProfilePage from "./pages/ProfilePage";
 import ContactPage from "./pages/ContactPage";
 import { ArrowRight } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 function Redirect({ to }: { to: string }) {
   const [, setLocation] = useLocation();
@@ -70,11 +70,75 @@ function WelcomeScreen() {
   );
 }
 
+function HistoryScreen() {
+  const [, setLocation] = useLocation();
+  const [filter, setFilter] = useState<"All" | "Food" | "Rides">("All");
+  const entries = [
+    { brand: "zomato", title: "Dum Biryani", range: "Apr 10 - Apr 12, 2023", category: "Food", status: "Ongoing" },
+    { brand: "J", title: "jumbo veg Burger", range: "Apr 10 - Apr 12, 2023", category: "Rides", status: "Complete" },
+    { brand: "D", title: "Pizza Family Pack", range: "Apr 10 - Apr 12, 2023", category: "Food", status: "Cancel" },
+  ] as const;
+
+  const shown = entries.filter((e) => (filter === "All" ? true : e.category === filter));
+  const statusClass = (s: string) =>
+    s === "Ongoing" ? "history-status-ongoing" : s === "Complete" ? "history-status-complete" : "history-status-cancel";
+
+  const brandClass = (b: string) =>
+    b === "zomato" ? "history-brand-zomato" : b === "J" ? "history-brand-jumbo" : "history-brand-domino";
+
+  return (
+    <div className="mobile-stage">
+      <div className="fit-shell">
+        <div className="phone-screen">
+          <section className="screen history-screen">
+            <div className="simple-topbar">
+              <button className="simple-topbar-button" type="button" onClick={() => setLocation("/home")} aria-label="Back">
+                ←
+              </button>
+              <h2 className="simple-topbar-title">History</h2>
+              <div className="simple-topbar-space" />
+            </div>
+
+            <div className="history-filter-row" role="tablist" aria-label="History filters">
+              {(["All", "Food", "Rides"] as const).map((k) => (
+                <button
+                  key={k}
+                  type="button"
+                  className={`history-filter-pill ${filter === k ? "history-filter-pill-active" : ""}`}
+                  onClick={() => setFilter(k)}
+                >
+                  {k}
+                </button>
+              ))}
+            </div>
+
+            <div className="history-card-list">
+              {shown.map((h) => (
+                <div key={`${h.brand}_${h.title}`} className="history-booking-card">
+                  <div className={`history-brand-badge ${brandClass(h.brand)}`}>{h.brand}</div>
+                  <div className="history-booking-copy">
+                    <strong>{h.title}</strong>
+                    <span>
+                      {h.range} • {h.category}
+                    </span>
+                  </div>
+                  <div className={`history-status-pill ${statusClass(h.status)}`}>{h.status}</div>
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Router() {
   return (
     <Switch>
       <Route path="/" component={WelcomeScreen} />
       <Route path="/home" component={SearchPage} />
+      <Route path="/history" component={HistoryScreen} />
       <Route path="/login" component={AuthPage} />
       <Route path="/auth">
         <Redirect to="/login" />
