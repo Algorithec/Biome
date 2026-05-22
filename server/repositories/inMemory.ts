@@ -47,6 +47,14 @@ export class InMemoryUserRepo {
   async getById(id: string) {
     return this.users.get(id) ?? null;
   }
+
+  async updateById(id: string, patch: Partial<Pick<UserEntity, "name" | "preferences">>) {
+    const existing = await this.getById(id);
+    if (!existing) return null;
+    const updated: UserEntity = { ...existing, ...patch };
+    this.users.set(updated.id, updated);
+    return updated;
+  }
 }
 
 export class InMemorySearchRepo {
@@ -85,5 +93,12 @@ export class InMemoryClickRepo {
     };
     this.clicks.set(created.id, created);
     return created;
+  }
+
+  async listByUser(userId: string, limit = 50) {
+    return Array.from(this.clicks.values())
+      .filter((c) => c.userId === userId)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .slice(0, limit);
   }
 }

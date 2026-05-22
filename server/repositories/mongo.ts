@@ -78,6 +78,14 @@ export class MongoUserRepo implements Pick<InMemoryUserRepo, "upsertByEmail" | "
     if (!doc) return null;
     return { ...doc, id: doc._id };
   }
+
+  async updateById(id: string, patch: Partial<Pick<UserEntity, "name" | "preferences">>) {
+    const col = await this.col();
+    await col.updateOne({ _id: id }, { $set: patch });
+    const doc = await col.findOne({ _id: id });
+    if (!doc) return null;
+    return { ...doc, id: doc._id };
+  }
 }
 
 export class MongoSearchRepo implements Pick<InMemorySearchRepo, "create" | "getById" | "listByUser"> {
@@ -112,7 +120,7 @@ export class MongoSearchRepo implements Pick<InMemorySearchRepo, "create" | "get
   }
 }
 
-export class MongoClickRepo implements Pick<InMemoryClickRepo, "create"> {
+export class MongoClickRepo implements Pick<InMemoryClickRepo, "create" | "listByUser"> {
   private colPromise: Promise<Collection<ClickDoc>> | null = null;
 
   private async col() {
@@ -128,6 +136,12 @@ export class MongoClickRepo implements Pick<InMemoryClickRepo, "create"> {
     const doc: ClickDoc = { _id: cryptoRandomId("clk"), ...input, createdAt };
     await col.insertOne(doc);
     return { ...doc, id: doc._id };
+  }
+
+  async listByUser(userId: string, limit = 50) {
+    const col = await this.col();
+    const docs = await col.find({ userId }).sort({ createdAt: -1 }).limit(limit).toArray();
+    return docs.map((d) => ({ ...d, id: d._id }));
   }
 }
 
