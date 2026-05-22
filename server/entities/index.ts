@@ -97,3 +97,20 @@ export type ClickEventEntity = {
   price?: number;
   createdAt: string;
 };
+
+export type OrderStatus = "CREATED" | "PAYMENT_PENDING" | "CONFIRMED" | "CANCELLED" | "FAILED";
+
+export type OrderEntity = {
+  id: string;
+  userId: string;
+  domain: DomainType;
+  provider: string;
+  title: string;
+  itemUrl: string;
+  amount: Money;
+  status: OrderStatus;
+  paymentIntentId?: string;
+  metadata?: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
+};
