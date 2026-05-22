@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
+import { ordersAPI } from "@/services/api";
 
 export default function ProfilePage() {
   const [, setLocation] = useLocation();
@@ -22,6 +23,7 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState(defaultProfile);
   const [editOpen, setEditOpen] = useState(false);
   const [draft, setDraft] = useState({ name: "", email: "", phone: "" });
+  const [orderCount, setOrderCount] = useState<number | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -45,10 +47,22 @@ export default function ProfilePage() {
     })();
   }, [defaultProfile]);
 
+  useEffect(() => {
+    (async () => {
+      try {
+        const data = await ordersAPI.listOrders(100);
+        const items = Array.isArray(data?.items) ? (data.items as Array<unknown>) : [];
+        setOrderCount(items.length);
+      } catch {
+        setOrderCount(null);
+      }
+    })();
+  }, []);
+
   const stats = [
     { label: "Total Savings", value: "₹24,580" },
     { label: "Cashback", value: "₹3,240" },
-    { label: "Orders", value: "32" },
+    { label: "Orders", value: orderCount === null ? "—" : String(orderCount) },
     { label: "Alerts", value: "5" },
   ];
 
