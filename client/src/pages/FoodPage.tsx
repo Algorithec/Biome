@@ -2,8 +2,9 @@ import { Clock, MapPin, Star, Crosshair, Store } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { MapView } from '@/components/Map';
 import { useMemo, useRef, useState } from 'react';
-import { foodAPI } from '@/services/api';
+import { foodAPI, ordersAPI } from '@/services/api';
 import { useLocation } from 'wouter';
+import { toast } from 'sonner';
 
 export default function FoodPage() {
   const [, setLocation] = useLocation();
@@ -225,7 +226,38 @@ export default function FoodPage() {
                         </span>
                       </div>
                     </div>
-                    <Button className="mt-4 w-full" onClick={() => window.open(restaurant.checkoutUrl, '_blank')}>
+                    <Button
+                      className="mt-4 w-full"
+                      onClick={async () => {
+                        try {
+                          const raw = window.prompt('Enter order amount in INR (optional):')?.trim();
+                          const amt = raw ? Number(raw) : null;
+                          if (amt && Number.isFinite(amt) && amt > 0) {
+                            await ordersAPI.createOrder({
+                              domain: 'food',
+                              provider: restaurant.provider,
+                              title: `${restaurant.name}`,
+                              itemUrl: restaurant.checkoutUrl,
+                              amount: { currency: 'INR', amount: Math.max(1, Math.round(amt)) },
+                              metadata: {
+                                restaurantId: restaurant.id,
+                                cuisine: restaurant.cuisine,
+                                rating: restaurant.rating,
+                                deliveryTimeMinutes: restaurant.deliveryTimeMinutes,
+                                deliveryFee: restaurant.deliveryFee,
+                                offer: restaurant.offer,
+                                center,
+                              },
+                            });
+                            toast.success('Food order saved.');
+                          }
+                        } catch {
+                          toast.message('Checkout link opened.', { description: 'Log in to save orders.' });
+                        } finally {
+                          window.open(restaurant.checkoutUrl, '_blank');
+                        }
+                      }}
+                    >
                       Order
                     </Button>
                   </div>
