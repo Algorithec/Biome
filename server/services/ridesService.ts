@@ -1,4 +1,5 @@
 import type { LatLng } from "./foodService";
+import { createHash } from "node:crypto";
 
 export type RideProvider = "Uber" | "Ola" | "Rapido" | "ONDC";
 export type RideType = "bike" | "auto" | "cab" | "premium";
@@ -30,6 +31,25 @@ function distanceKm(a: LatLng, b: LatLng) {
 
 function clamp(n: number, min: number, max: number) {
   return Math.max(min, Math.min(max, n));
+}
+
+function hashHex12(input: string) {
+  return createHash("sha256").update(input).digest("hex").slice(0, 12);
+}
+
+function mulberry32(seed: number) {
+  let t = seed >>> 0;
+  return () => {
+    t += 0x6d2b79f5;
+    let x = Math.imul(t ^ (t >>> 15), 1 | t);
+    x ^= x + Math.imul(x ^ (x >>> 7), 61 | x);
+    return ((x ^ (x >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function seedFrom(input: string) {
+  const hex = createHash("sha256").update(input).digest("hex").slice(0, 8);
+  return Number.parseInt(hex, 16) >>> 0;
 }
 
 function getRapidApiKey() {
@@ -83,6 +103,18 @@ function normalizeRideType(v: string | undefined): RideType {
   return "cab";
 }
 
+async function fetchJsonWithTimeout(url: string, headers: Record<string, string>, timeoutMs = 8000): Promise<unknown> {
+  const controller = new AbortController();
+  const t = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const r = await fetch(url, { headers, signal: controller.signal });
+    if (!r.ok) throw new Error(`RAPIDAPI_HTTP_${r.status}`);
+    return (await r.json()) as unknown;
+  } finally {
+    clearTimeout(t);
+  }
+}
+
 async function rapidApiFareEstimateForProvider(input: {
   provider: RideProvider;
   pickup: LatLng;
@@ -105,11 +137,12 @@ async function rapidApiFareEstimateForProvider(input: {
   if (!cfg.url.includes("{dropoff_lat}") && !u.searchParams.has("dropoff_lat")) u.searchParams.set("dropoff_lat", String(input.dropoff.lat));
   if (!cfg.url.includes("{dropoff_lng}") && !u.searchParams.has("dropoff_lng")) u.searchParams.set("dropoff_lng", String(input.dropoff.lng));
 
-  const json = await fetch(u.toString(), {
-    headers: { "x-rapidapi-key": apiKey, "x-rapidapi-host": cfg.host },
-  }).then(async (r) => {
-    if (!r.ok) throw new Error(`RAPIDAPI_${input.provider}_FARE_FAILED`);
-    return r.json() as Promise<unknown>;
+  const json = await fetchJsonWithTimeout(
+    u.toString(),
+    { "x-rapidapi-key": apiKey, "x-rapidapi-host": cfg.host },
+    8000,
+  ).catch(() => {
+    throw new Error(`RAPIDAPI_${input.provider}_FARE_FAILED`);
   });
 
   const arr =
@@ -124,8 +157,23 @@ async function rapidApiFareEstimateForProvider(input: {
     const driverRating = clamp(pickNumber(x, ["driverRating", "rating", "driver_rating"]) ?? 4.5, 0, 5);
     const surgeMultiplier = pickNumber(x, ["surge", "surgeMultiplier", "surge_multiplier"]);
     const deeplinkUrl = pickString(x, ["deeplink", "deeplinkUrl", "url", "link"]) || "https://example.com/checkout";
+    const externalId = pickString(x, ["id", "quote_id", "quoteId", "estimate_id", "estimateId"]);
+    const stablePart =
+      externalId ??
+      hashHex12(
+        [
+          input.provider.toLowerCase(),
+          type,
+          String(Math.round(fare)),
+          String(Math.round(eta ?? 10)),
+          String(input.pickup.lat),
+          String(input.pickup.lng),
+          String(input.dropoff.lat),
+          String(input.dropoff.lng),
+        ].join("|"),
+      );
     return {
-      id: `${input.provider.toLowerCase()}_${type}_${Math.random().toString(16).slice(2, 8)}`,
+      id: `rd_${input.provider.toLowerCase()}_${stablePart}`,
       provider: input.provider,
       type,
       fare: Math.round(fare),
@@ -170,19 +218,20 @@ export class RidesService {
       }
 
       for (const type of types) {
-        const surge = Math.random() > 0.75 ? Number((1 + Math.random() * 0.6).toFixed(2)) : 1;
+        const rng = mulberry32(seedFrom([provider, type, String(input.pickup.lat), String(input.pickup.lng), String(input.dropoff.lat), String(input.dropoff.lng)].join("|")));
+        const surge = rng() > 0.75 ? Number((1 + rng() * 0.6).toFixed(2)) : 1;
         const perKm =
           type === "bike" ? 10 : type === "auto" ? 14 : type === "cab" ? 18 : 28;
         const base = 35 + dist * perKm;
         const fare = Math.round(base * surge);
 
         quotes.push({
-          id: `${provider.toLowerCase()}_${type}_${Math.random().toString(16).slice(2, 8)}`,
+          id: `rd_${provider.toLowerCase()}_${hashHex12([provider.toLowerCase(), type, String(fare), String(input.pickup.lat), String(input.pickup.lng), String(input.dropoff.lat), String(input.dropoff.lng)].join("|"))}`,
           provider,
           type,
           fare,
-          etaMinutes: clamp(baseEta + (type === "premium" ? -1 : type === "bike" ? 2 : 0) + Math.round(Math.random() * 4), 3, 75),
-          driverRating: Number((4.4 + Math.random() * 0.6).toFixed(1)),
+          etaMinutes: clamp(baseEta + (type === "premium" ? -1 : type === "bike" ? 2 : 0) + Math.round(rng() * 4), 3, 75),
+          driverRating: Number((4.4 + rng() * 0.6).toFixed(1)),
           distanceKm: dist,
           surgeMultiplier: surge > 1 ? surge : undefined,
           deeplinkUrl: "https://example.com/checkout",
@@ -208,7 +257,7 @@ export class RidesService {
 
   async book(input: { quoteId: string }) {
     return {
-      bookingId: `bk_${Math.random().toString(16).slice(2, 10)}`,
+      bookingId: `bk_${hashHex12(input.quoteId)}`,
       quoteId: input.quoteId,
       status: "CONFIRMED",
       deeplinkUrl: "https://example.com/checkout",
