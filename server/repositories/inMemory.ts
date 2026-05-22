@@ -1,5 +1,5 @@
 import { nanoid } from "nanoid";
-import type { ClickEventEntity, SearchHistoryEntity, UserEntity } from "../entities";
+import type { ClickEventEntity, OrderEntity, SearchHistoryEntity, UserEntity } from "../entities";
 
 export class InMemoryUserRepo {
   private users = new Map<string, UserEntity>();
@@ -100,5 +100,40 @@ export class InMemoryClickRepo {
       .filter((c) => c.userId === userId)
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
       .slice(0, limit);
+  }
+}
+
+export class InMemoryOrderRepo {
+  private orders = new Map<string, OrderEntity>();
+
+  async create(input: Omit<OrderEntity, "id" | "createdAt" | "updatedAt">) {
+    const now = new Date().toISOString();
+    const created: OrderEntity = {
+      ...input,
+      id: `ord_${nanoid(12)}`,
+      createdAt: now,
+      updatedAt: now,
+    };
+    this.orders.set(created.id, created);
+    return created;
+  }
+
+  async getById(id: string) {
+    return this.orders.get(id) ?? null;
+  }
+
+  async listByUser(userId: string, limit = 50) {
+    return Array.from(this.orders.values())
+      .filter((o) => o.userId === userId)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .slice(0, limit);
+  }
+
+  async updateById(id: string, patch: Partial<Pick<OrderEntity, "status" | "paymentIntentId" | "metadata" | "title" | "amount" | "itemUrl">>) {
+    const existing = await this.getById(id);
+    if (!existing) return null;
+    const updated: OrderEntity = { ...existing, ...patch, updatedAt: new Date().toISOString() };
+    this.orders.set(updated.id, updated);
+    return updated;
   }
 }
