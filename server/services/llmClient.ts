@@ -1,3 +1,4 @@
+// LLM client Wrapper :/ For the internal model -  Make the code Redundant :p
 export type LlmJsonResult<T> = {
   data: T;
   rawText?: string;

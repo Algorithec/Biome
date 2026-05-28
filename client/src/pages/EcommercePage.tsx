@@ -9,7 +9,7 @@ import type { BackendSearchResult } from '@/types';
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-
+// moving the hardcoded files - > to fetch the source from the backend 
 export default function EcommercePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<BackendSearchResult | null>(null);
@@ -91,6 +91,7 @@ export default function EcommercePage() {
                 title: 'Instant Comparison',
                 description: 'Compare prices across all platforms in seconds',
               },
+// need to fetch it from the api/ llm service
               {
                 icon: '🎟️',
                 title: 'Auto Coupon Apply',
