@@ -83,7 +83,8 @@ export default function SearchPage() {
     return 'home';
   }, [location]);
 
-  const sidebarOpen = isDesktop || showSidebar;
+  const sidebarVisible = isDesktop || showSidebar;
+  const sidebarOverlayVisible = !isDesktop && showSidebar;
 
   const Sidebar = (
     <aside className="home-sidebar">
@@ -172,7 +173,7 @@ export default function SearchPage() {
     <div className="mobile-stage">
       <div className="fit-shell">
         <div className="phone-screen">
-          <section className={`screen home-screen ${sidebarOpen ? 'sidebar-open' : ''}`}>
+          <section className={`screen home-screen ${sidebarOverlayVisible ? 'sidebar-open' : ''}`}>
             <div className="home-main">
               <header className="home-header">
                 <button
@@ -299,14 +300,14 @@ export default function SearchPage() {
                 </div>
               </nav>
 
-      <p className="home-footer-note">Engineered by Deepenk</p>
+              <p className="home-footer-note">Engineered by Deepenk</p>
             </div>
 
-            {!isDesktop && showSidebar ? (
+            {sidebarOverlayVisible ? (
               <button aria-label="Close sidebar" className="home-sidebar-overlay" type="button" onClick={() => setShowSidebar(false)} />
             ) : null}
 
-            {sidebarOpen ? Sidebar : null}
+            {sidebarVisible ? Sidebar : null}
           </section>
         </div>
       </div>
