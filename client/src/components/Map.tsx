@@ -79,6 +79,11 @@
 import { useEffect, useRef, useState } from "react";
 import { usePersistFn } from "@/hooks/usePersistFn";
 import { cn } from "@/lib/utils";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+import iconRetinaUrl from "leaflet/dist/images/marker-icon-2x.png";
+import iconUrl from "leaflet/dist/images/marker-icon.png";
+import shadowUrl from "leaflet/dist/images/marker-shadow.png";
 
 declare global {
   interface Window {
@@ -178,4 +183,99 @@ export function MapView({
       )}
     </div>
   );
+}
+
+interface OsmMapViewProps {
+  className?: string;
+  initialCenter?: { lat: number; lng: number };
+  initialZoom?: number;
+  onMapReady?: (map: L.Map) => void;
+}
+
+export function OsmMapView({
+  className,
+  initialCenter = { lat: 37.7749, lng: -122.4194 },
+  initialZoom = 12,
+  onMapReady,
+}: OsmMapViewProps) {
+  const mapContainer = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<L.Map | null>(null);
+
+  useEffect(() => {
+    if (!mapContainer.current) return;
+    if (mapRef.current) return;
+
+    L.Icon.Default.mergeOptions({
+      iconRetinaUrl,
+      iconUrl,
+      shadowUrl,
+    });
+    L.Marker.prototype.options.icon = L.icon({
+      iconRetinaUrl,
+      iconUrl,
+      shadowUrl,
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowSize: [41, 41],
+    });
+
+    const map = L.map(mapContainer.current, {
+      zoomControl: true,
+      attributionControl: true,
+    }).setView([initialCenter.lat, initialCenter.lng], initialZoom);
+
+    const proxyLayer = L.tileLayer("/api/rides/tiles/{z}/{x}/{y}.png", {
+      maxZoom: 20,
+      crossOrigin: true,
+      attribution: "&copy; OpenStreetMap contributors",
+    });
+    const primary = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      crossOrigin: true,
+      subdomains: ["a", "b", "c"],
+      attribution: "&copy; OpenStreetMap contributors",
+    });
+    const fallback = L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+      maxZoom: 20,
+      crossOrigin: true,
+      subdomains: ["a", "b", "c", "d"],
+      attribution: "&copy; OpenStreetMap contributors &copy; CARTO",
+    });
+    let usedFallback = false;
+    let tileErrors = 0;
+    const handleTileError = () => {
+      tileErrors += 1;
+      if (usedFallback) return;
+      if (tileErrors < 2) return;
+      usedFallback = true;
+      map.removeLayer(proxyLayer);
+      map.removeLayer(primary);
+      fallback.addTo(map);
+    };
+    proxyLayer.on("tileerror", () => {
+      map.removeLayer(proxyLayer);
+      primary.addTo(map);
+    });
+    primary.on("tileerror", handleTileError);
+    proxyLayer.addTo(map);
+
+    mapRef.current = map;
+    onMapReady?.(map);
+
+    const ro = new ResizeObserver(() => {
+      map.invalidateSize();
+    });
+    ro.observe(mapContainer.current);
+    window.setTimeout(() => map.invalidateSize(), 0);
+    window.setTimeout(() => map.invalidateSize(), 250);
+
+    return () => {
+      ro.disconnect();
+      map.remove();
+      mapRef.current = null;
+    };
+  }, [initialCenter.lat, initialCenter.lng, initialZoom, onMapReady]);
+
+  return <div ref={mapContainer} className={cn("w-full h-[500px]", className)} />;
 }
