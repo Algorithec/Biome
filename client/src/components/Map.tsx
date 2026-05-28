@@ -227,18 +227,15 @@ export function OsmMapView({
 
     const proxyLayer = L.tileLayer("/api/rides/tiles/{z}/{x}/{y}.png", {
       maxZoom: 20,
-      crossOrigin: true,
       attribution: "&copy; OpenStreetMap contributors",
     });
     const primary = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
-      crossOrigin: true,
       subdomains: ["a", "b", "c"],
       attribution: "&copy; OpenStreetMap contributors",
     });
     const fallback = L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
       maxZoom: 20,
-      crossOrigin: true,
       subdomains: ["a", "b", "c", "d"],
       attribution: "&copy; OpenStreetMap contributors &copy; CARTO",
     });
