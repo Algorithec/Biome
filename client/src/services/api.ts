@@ -204,6 +204,26 @@ export const ridesAPI = {
       throw error;
     }
   },
+
+  geocode: async (q: string) => {
+    try {
+      const response = await apiClient.get('/rides/geocode', { params: { q } });
+      return response.data;
+    } catch (error) {
+      console.error('Geocode failed:', error);
+      throw error;
+    }
+  },
+
+  reverseGeocode: async (lat: number, lng: number) => {
+    try {
+      const response = await apiClient.get('/rides/reverse', { params: { lat, lng } });
+      return response.data;
+    } catch (error) {
+      console.error('Reverse geocode failed:', error);
+      throw error;
+    }
+  },
 };
 
 /**
