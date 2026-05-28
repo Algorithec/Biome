@@ -1,4 +1,4 @@
-import { Clock, Star, MapPin, Crosshair, Navigation } from 'lucide-react';
+import { Bell, Clock, Menu, Mic, Star, ShoppingCart, Crosshair, House, Pizza, User, CarFront } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { MapView } from '@/components/Map';
 import { useMemo, useRef, useState } from 'react';
@@ -16,6 +16,7 @@ export default function RidesPage() {
   const [pickup, setPickup] = useState<{ lat: number; lng: number } | null>(null);
   const [dropoff, setDropoff] = useState<{ lat: number; lng: number } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [activeType, setActiveType] = useState<'bike' | 'auto' | 'cab' | 'premium'>('bike');
   const [quotes, setQuotes] = useState<
     Array<{
       id: string;
@@ -82,16 +83,24 @@ export default function RidesPage() {
       <div className="fit-shell">
         <div className="phone-screen">
           <section className="screen" style={{ paddingTop: 16, paddingBottom: 28 }}>
-            <div className="simple-topbar">
-              <button className="simple-topbar-button" type="button" onClick={() => setLocation('/home')} aria-label="Back">
-                ←
+            <div className="app-topbar">
+              <button className="app-icon-circle" type="button" aria-label="Menu" onClick={() => setLocation('/home')}>
+                <Menu size={22} strokeWidth={2.2} />
               </button>
-              <h2 className="simple-topbar-title">Rides</h2>
-              <div className="simple-topbar-space" />
-            </div>
-
-            <div className="mt-4 rounded-2xl border border-amber-100 bg-white/90 p-4 text-sm text-muted-foreground">
-              Tap map once for pickup, second time for drop. Tap again to reset.
+              <div className="app-searchbar" role="search">
+                <input className="app-searchbar-input" placeholder="Type briefly what you want" />
+                <button className="app-icon-ghost" type="button" aria-label="Voice">
+                  <Mic size={18} strokeWidth={2.4} />
+                </button>
+              </div>
+              <div className="flex items-center gap-2 justify-end">
+                <button className="app-icon-ghost" type="button" aria-label="Notifications" onClick={() => setLocation('/history')}>
+                  <Bell size={20} strokeWidth={2.2} />
+                </button>
+                <button className="app-icon-ghost" type="button" aria-label="Cart" onClick={() => setLocation('/history')}>
+                  <ShoppingCart size={20} strokeWidth={2.2} />
+                </button>
+              </div>
             </div>
 
             <div className="mt-4 flex gap-2">
@@ -132,17 +141,6 @@ export default function RidesPage() {
               </Button>
             </div>
 
-            <div className="mt-4 rounded-2xl border border-amber-100 bg-white/90 p-4 text-sm space-y-2">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <MapPin className="w-4 h-4" />
-                <span>Pickup: {pickup ? `${pickup.lat.toFixed(5)}, ${pickup.lng.toFixed(5)}` : 'not set'}</span>
-              </div>
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Navigation className="w-4 h-4" />
-                <span>Drop: {dropoff ? `${dropoff.lat.toFixed(5)}, ${dropoff.lng.toFixed(5)}` : 'not set'}</span>
-              </div>
-            </div>
-
             <div className="mt-4">
               <MapView
                 initialCenter={initialCenter}
@@ -175,69 +173,101 @@ export default function RidesPage() {
             </div>
 
             <div className="mt-6">
-              <div className="text-xl font-bold text-foreground">Fare comparison</div>
-              <div className="text-sm text-muted-foreground mt-1">{isLoading ? 'Fetching quotes…' : 'Sorted by lowest fare.'}</div>
+              <div className="text-sm text-muted-foreground">Recommended for you</div>
+              <div className="mt-3 flex items-center justify-between gap-3">
+                {(['bike', 'auto', 'cab', 'premium'] as const).map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    className={`history-filter-pill ${activeType === t ? 'history-filter-pill-active' : ''}`}
+                    onClick={() => setActiveType(t)}
+                  >
+                    {t === 'premium' ? 'SUV' : t.charAt(0).toUpperCase() + t.slice(1)}
+                  </button>
+                ))}
+              </div>
 
               {!isLoading && pickup && dropoff && quotes.length === 0 && (
                 <div className="py-10 text-center text-muted-foreground">No quotes returned.</div>
               )}
 
               <div className="mt-4 space-y-3">
-                {quotes.map((ride) => (
+                {(quotes.filter((q) => q.type === activeType) as typeof quotes).map((ride) => (
                   <div key={ride.id} className="rounded-2xl border border-amber-100 bg-white/95 p-4 shadow-sm">
-                    <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center justify-between gap-3">
                       <div className="min-w-0">
-                        <div className="font-bold text-foreground truncate">{ride.type.toUpperCase()}</div>
-                        <div className="text-xs text-muted-foreground truncate">
-                          {ride.provider} • {ride.distanceKm} km
-                          {ride.surgeMultiplier ? ` • Surge x${ride.surgeMultiplier}` : ''}
+                        <div className="font-bold text-foreground truncate">{ride.provider}</div>
+                        <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
+                          <span className="inline-flex items-center gap-1">
+                            <Star className="w-3.5 h-3.5" /> {ride.driverRating.toFixed(1)}
+                          </span>
+                          <span className="inline-flex items-center gap-1">
+                            <Clock className="w-3.5 h-3.5" /> {ride.etaMinutes} min away
+                          </span>
                         </div>
                       </div>
-                      <div className="flex-none text-lg font-extrabold text-foreground">₹{ride.fare.toLocaleString()}</div>
+                      <div className="flex items-center gap-3">
+                        <div className="text-lg font-extrabold text-foreground">₹{ride.fare.toLocaleString()}</div>
+                        <Button
+                          className="rounded-full bg-gradient-to-r from-amber-500 to-orange-600 text-white"
+                          onClick={async () => {
+                            try {
+                              await ordersAPI.createOrder({
+                                domain: 'rides',
+                                provider: ride.provider,
+                                title: `${ride.provider} ${ride.type.toUpperCase()} ride`,
+                                itemUrl: ride.deeplinkUrl,
+                                amount: { currency: 'INR', amount: Math.max(1, Math.round(ride.fare)) },
+                                metadata: {
+                                  quoteId: ride.id,
+                                  pickup,
+                                  dropoff,
+                                  etaMinutes: ride.etaMinutes,
+                                  distanceKm: ride.distanceKm,
+                                  surgeMultiplier: ride.surgeMultiplier,
+                                },
+                              });
+                              toast.success('Ride saved to orders.');
+                            } catch {
+                              toast.message('Booking link opened.', { description: 'Log in to save orders.' });
+                            } finally {
+                              window.open(ride.deeplinkUrl, '_blank');
+                            }
+                          }}
+                        >
+                          Select
+                        </Button>
+                      </div>
                     </div>
-
-                    <div className="mt-3 flex items-center justify-between text-sm text-muted-foreground">
-                      <span className="inline-flex items-center gap-1">
-                        <Clock className="w-4 h-4" /> {ride.etaMinutes}m
-                      </span>
-                      <span className="inline-flex items-center gap-1">
-                        <Star className="w-4 h-4" /> {ride.driverRating.toFixed(1)}
-                      </span>
-                    </div>
-
-                    <Button
-                      className="mt-4 w-full"
-                      onClick={async () => {
-                        try {
-                          await ordersAPI.createOrder({
-                            domain: 'rides',
-                            provider: ride.provider,
-                            title: `${ride.provider} ${ride.type.toUpperCase()} ride`,
-                            itemUrl: ride.deeplinkUrl,
-                            amount: { currency: 'INR', amount: Math.max(1, Math.round(ride.fare)) },
-                            metadata: {
-                              quoteId: ride.id,
-                              pickup,
-                              dropoff,
-                              etaMinutes: ride.etaMinutes,
-                              distanceKm: ride.distanceKm,
-                              surgeMultiplier: ride.surgeMultiplier,
-                            },
-                          });
-                          toast.success('Ride saved to orders.');
-                        } catch {
-                          toast.message('Booking link opened.', { description: 'Log in to save orders.' });
-                        } finally {
-                          window.open(ride.deeplinkUrl, '_blank');
-                        }
-                      }}
-                    >
-                      Book
-                    </Button>
                   </div>
                 ))}
               </div>
             </div>
+
+            <nav className="app-bottom-nav" aria-label="Bottom navigation">
+              <div className="app-bottom-nav-inner">
+                <button className="app-bottom-nav-item" type="button" onClick={() => setLocation('/home')} aria-label="Home">
+                  <span className="app-bottom-nav-bubble">
+                    <House size={22} strokeWidth={2.2} />
+                  </span>
+                </button>
+                <button className="app-bottom-nav-item app-bottom-nav-item-active" type="button" aria-label="Rides">
+                  <span className="app-bottom-nav-bubble">
+                    <CarFront size={22} strokeWidth={2.2} />
+                  </span>
+                </button>
+                <button className="app-bottom-nav-item" type="button" onClick={() => setLocation('/food')} aria-label="Food">
+                  <span className="app-bottom-nav-bubble">
+                    <Pizza size={22} strokeWidth={2.2} />
+                  </span>
+                </button>
+                <button className="app-bottom-nav-item" type="button" onClick={() => setLocation('/profile')} aria-label="Profile">
+                  <span className="app-bottom-nav-bubble">
+                    <User size={22} strokeWidth={2.2} />
+                  </span>
+                </button>
+              </div>
+            </nav>
           </section>
         </div>
       </div>
