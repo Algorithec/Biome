@@ -869,6 +869,14 @@
     padding-bottom: 28px;
   }
 
+  .home-sidebar {
+    grid-column: 1;
+  }
+
+  .home-main {
+    grid-column: 2;
+  }
+
   .home-header {
     display: none;
   }
