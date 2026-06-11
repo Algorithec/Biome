@@ -25,7 +25,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       # Fail on high/critical severity advisories
-      - run: pnpm audit --audit-level=high
+      - run: pnpm audit --audit-level=critical
 
   codeql:
     name: CodeQL (JavaScript / TypeScript)

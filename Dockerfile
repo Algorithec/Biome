@@ -7,8 +7,8 @@ WORKDIR /app
 
 # Install deps (cached layer)
 COPY pnpm-lock.yaml package.json ./
+COPY patches/ ./patches/
 RUN pnpm fetch --frozen-lockfile
-
 COPY . .
 RUN pnpm install --offline --frozen-lockfile
 
