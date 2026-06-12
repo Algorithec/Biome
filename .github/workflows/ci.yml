@@ -80,16 +80,21 @@ jobs:
           ghc-version: "9.6"
           cabal-version: "3.10"
 
-      - name: Cache Cabal store
+      - name: Cache Cabal store and build dir
         uses: actions/cache@v4
         with:
-          path: ~/.cabal/store
-          key: cabal-${{ runner.os }}-ghc-9.6-${{ hashFiles('payments-hs/deepenk-payments.cabal', 'payments-hs/cabal.project') }}
+          path: |
+            ~/.cabal/store
+            payments-hs/dist-newstyle
+          key: cabal-${{ runner.os }}-ghc-9.6-${{ hashFiles('payments-hs/deepenk-payments.cabal') }}
           restore-keys: |
             cabal-${{ runner.os }}-ghc-9.6-
 
       - name: Update Hackage index
         run: cabal update
+
+      - name: Install dependencies only
+        run: cabal build --only-dependencies all
 
       - name: Build (with -Wall -Werror)
         run: cabal build all
