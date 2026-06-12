@@ -6,4 +6,3 @@ export const EmailLoginSchema = z.object({
 });
 
 export type EmailLoginDto = z.infer<typeof EmailLoginSchema>;
-

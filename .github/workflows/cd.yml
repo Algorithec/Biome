@@ -14,7 +14,7 @@ on:
 
 concurrency:
   group: deploy-${{ github.ref }}
-  cancel-in-progress: false   # never cancel an in-flight deploy
+  cancel-in-progress: false # never cancel an in-flight deploy
 
 jobs:
   # ────────────────────────────────────────────────────────────────
@@ -118,7 +118,6 @@ jobs:
       name: staging
       url: ${{ vars.STAGING_URL }}
 
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -158,7 +157,7 @@ jobs:
     needs: deploy-staging
     runs-on: ubuntu-latest
     environment:
-      name: production          # requires approval in GitHub Environments settings
+      name: production # requires approval in GitHub Environments settings
       url: ${{ vars.PRODUCTION_URL }}
 
     steps:

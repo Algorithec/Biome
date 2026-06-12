@@ -24,7 +24,8 @@ function extractToken(req: Request) {
   if (authHeader?.toLowerCase().startsWith("bearer ")) {
     return authHeader.slice(7).trim();
   }
-  const cookieToken = (req.cookies as Record<string, unknown> | undefined)?.deepenk_token;
+  const cookieToken = (req.cookies as Record<string, unknown> | undefined)
+    ?.deepenk_token;
   return typeof cookieToken === "string" ? cookieToken : undefined;
 }
 
@@ -37,7 +38,10 @@ export function authOptional() {
     }
     try {
       const payload = jwt.verify(token, getJwtSecret()) as TokenPayload;
-      req.ctx = { ...(req.ctx || { requestId: "unknown" }), userId: payload.id };
+      req.ctx = {
+        ...(req.ctx || { requestId: "unknown" }),
+        userId: payload.id,
+      };
     } catch {
       next();
       return;
@@ -55,11 +59,13 @@ export function authRequired() {
     }
     try {
       const payload = jwt.verify(token, getJwtSecret()) as TokenPayload;
-      req.ctx = { ...(req.ctx || { requestId: "unknown" }), userId: payload.id };
+      req.ctx = {
+        ...(req.ctx || { requestId: "unknown" }),
+        userId: payload.id,
+      };
       next();
     } catch {
       res.status(401).json({ error: "INVALID_TOKEN" });
     }
   };
 }
-

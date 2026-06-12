@@ -16,7 +16,9 @@ export type PriceAlertEntity = {
 };
 
 export interface PriceAlertsRepo {
-  create(input: Omit<PriceAlertEntity, "id" | "createdAt">): Promise<PriceAlertEntity>;
+  create(
+    input: Omit<PriceAlertEntity, "id" | "createdAt">
+  ): Promise<PriceAlertEntity>;
   listActive(userId: string): Promise<PriceAlertEntity[]>;
   listAllActive(limit?: number): Promise<PriceAlertEntity[]>;
   deactivate(alertId: string, userId: string): Promise<boolean>;
@@ -36,12 +38,14 @@ export class InMemoryPriceAlertsRepo implements PriceAlertsRepo {
   }
 
   async listActive(userId: string) {
-    return Array.from(this.alerts.values()).filter((a) => a.userId === userId && a.isActive);
+    return Array.from(this.alerts.values()).filter(
+      a => a.userId === userId && a.isActive
+    );
   }
 
   async listAllActive(limit = 200) {
     return Array.from(this.alerts.values())
-      .filter((a) => a.isActive)
+      .filter(a => a.isActive)
       .slice(0, limit);
   }
 
@@ -82,8 +86,11 @@ export class MongoPriceAlertsRepo implements PriceAlertsRepo {
 
   async listActive(userId: string) {
     const col = await this.col();
-    const docs = await col.find({ userId, isActive: true }).sort({ createdAt: -1 }).toArray();
-    return docs.map((d) => ({ ...d, id: d._id }));
+    const docs = await col
+      .find({ userId, isActive: true })
+      .sort({ createdAt: -1 })
+      .toArray();
+    return docs.map(d => ({ ...d, id: d._id }));
   }
 
   async listAllActive(limit = 200) {
@@ -93,12 +100,15 @@ export class MongoPriceAlertsRepo implements PriceAlertsRepo {
       .sort({ createdAt: -1 })
       .limit(limit)
       .toArray();
-    return docs.map((d) => ({ ...d, id: d._id }));
+    return docs.map(d => ({ ...d, id: d._id }));
   }
 
   async deactivate(alertId: string, userId: string) {
     const col = await this.col();
-    const res = await col.updateOne({ _id: alertId, userId }, { $set: { isActive: false } });
+    const res = await col.updateOne(
+      { _id: alertId, userId },
+      { $set: { isActive: false } }
+    );
     return res.modifiedCount > 0;
   }
 }

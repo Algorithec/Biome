@@ -4,7 +4,10 @@ import { ridesService } from "../services/ridesService";
 
 const router = Router();
 
-async function fetchJsonWithTimeout(url: string, timeoutMs = 8000): Promise<unknown> {
+async function fetchJsonWithTimeout(
+  url: string,
+  timeoutMs = 8000
+): Promise<unknown> {
   const controller = new AbortController();
   const t = setTimeout(() => controller.abort(), timeoutMs);
   try {
@@ -19,7 +22,10 @@ async function fetchJsonWithTimeout(url: string, timeoutMs = 8000): Promise<unkn
   }
 }
 
-async function fetchBufferWithTimeout(url: string, timeoutMs = 8000): Promise<{ buf: Buffer; contentType?: string; cacheControl?: string }> {
+async function fetchBufferWithTimeout(
+  url: string,
+  timeoutMs = 8000
+): Promise<{ buf: Buffer; contentType?: string; cacheControl?: string }> {
   const controller = new AbortController();
   const t = setTimeout(() => controller.abort(), timeoutMs);
   try {
@@ -47,7 +53,9 @@ router.get("/tiles/:z/:x/:y.png", async (req: Request, res: Response) => {
     .safeParse(req.params);
 
   if (!parsed.success) {
-    res.status(400).json({ error: "INVALID_PARAMS", details: parsed.error.flatten() });
+    res
+      .status(400)
+      .json({ error: "INVALID_PARAMS", details: parsed.error.flatten() });
     return;
   }
 
@@ -56,13 +64,19 @@ router.get("/tiles/:z/:x/:y.png", async (req: Request, res: Response) => {
   const fallback = `https://a.basemaps.cartocdn.com/light_all/${zoom}/${x}/${y}.png`;
 
   try {
-    const { buf, contentType, cacheControl } = await fetchBufferWithTimeout(primary, 8000);
+    const { buf, contentType, cacheControl } = await fetchBufferWithTimeout(
+      primary,
+      8000
+    );
     res.setHeader("content-type", contentType || "image/png");
     res.setHeader("cache-control", cacheControl || "public, max-age=86400");
     res.end(buf);
   } catch {
     try {
-      const { buf, contentType, cacheControl } = await fetchBufferWithTimeout(fallback, 8000);
+      const { buf, contentType, cacheControl } = await fetchBufferWithTimeout(
+        fallback,
+        8000
+      );
       res.setHeader("content-type", contentType || "image/png");
       res.setHeader("cache-control", cacheControl || "public, max-age=86400");
       res.end(buf);
@@ -73,9 +87,13 @@ router.get("/tiles/:z/:x/:y.png", async (req: Request, res: Response) => {
 });
 
 router.get("/geocode", async (req: Request, res: Response) => {
-  const parsed = z.object({ q: z.string().trim().min(2).max(200) }).safeParse(req.query);
+  const parsed = z
+    .object({ q: z.string().trim().min(2).max(200) })
+    .safeParse(req.query);
   if (!parsed.success) {
-    res.status(400).json({ error: "INVALID_QUERY", details: parsed.error.flatten() });
+    res
+      .status(400)
+      .json({ error: "INVALID_QUERY", details: parsed.error.flatten() });
     return;
   }
 
@@ -101,7 +119,9 @@ router.get("/reverse", async (req: Request, res: Response) => {
     .safeParse(req.query);
 
   if (!parsed.success) {
-    res.status(400).json({ error: "INVALID_QUERY", details: parsed.error.flatten() });
+    res
+      .status(400)
+      .json({ error: "INVALID_QUERY", details: parsed.error.flatten() });
     return;
   }
 
@@ -131,7 +151,9 @@ router.get("/route", async (req: Request, res: Response) => {
     .safeParse(req.query);
 
   if (!parsed.success) {
-    res.status(400).json({ error: "INVALID_QUERY", details: parsed.error.flatten() });
+    res
+      .status(400)
+      .json({ error: "INVALID_QUERY", details: parsed.error.flatten() });
     return;
   }
 
@@ -146,8 +168,10 @@ router.get("/route", async (req: Request, res: Response) => {
     const json = (await fetchJsonWithTimeout(url.toString(), 8000)) as any;
     const route = json?.routes?.[0];
     const geometry = route?.geometry;
-    const distanceMeters = typeof route?.distance === "number" ? route.distance : null;
-    const durationSeconds = typeof route?.duration === "number" ? route.duration : null;
+    const distanceMeters =
+      typeof route?.distance === "number" ? route.distance : null;
+    const durationSeconds =
+      typeof route?.duration === "number" ? route.duration : null;
 
     if (!geometry) {
       res.status(502).json({ error: "ROUTE_BAD_RESPONSE" });
@@ -169,7 +193,9 @@ router.post("/fare-estimate", async (req: Request, res: Response) => {
     .safeParse(req.body);
 
   if (!parsed.success) {
-    res.status(400).json({ error: "INVALID_BODY", details: parsed.error.flatten() });
+    res
+      .status(400)
+      .json({ error: "INVALID_BODY", details: parsed.error.flatten() });
     return;
   }
 
@@ -186,18 +212,24 @@ router.get("/available", async (req: Request, res: Response) => {
     .safeParse(req.query);
 
   if (!parsed.success) {
-    res.status(400).json({ error: "INVALID_QUERY", details: parsed.error.flatten() });
+    res
+      .status(400)
+      .json({ error: "INVALID_QUERY", details: parsed.error.flatten() });
     return;
   }
 
-  const out = await ridesService.getAvailable({ center: { lat: parsed.data.lat, lng: parsed.data.lng } });
+  const out = await ridesService.getAvailable({
+    center: { lat: parsed.data.lat, lng: parsed.data.lng },
+  });
   res.json(out);
 });
 
 router.post("/book", async (req: Request, res: Response) => {
   const parsed = z.object({ quoteId: z.string().min(1) }).safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: "INVALID_BODY", details: parsed.error.flatten() });
+    res
+      .status(400)
+      .json({ error: "INVALID_BODY", details: parsed.error.flatten() });
     return;
   }
   const out = await ridesService.book({ quoteId: parsed.data.quoteId });

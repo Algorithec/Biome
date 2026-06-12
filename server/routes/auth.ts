@@ -5,15 +5,33 @@ import { EmailLoginSchema } from "../dto/auth";
 import { authOptional, authRequired } from "../middleware/auth";
 import { userRepo } from "../repositories";
 import { otpService } from "../services/otpService";
-import { buildGoogleAuthUrl, createGoogleAuthState, exchangeCodeForProfile, isGoogleConfigured } from "../services/googleOAuth";
-import { createEmailSender, createSmsSender, isEmailSenderConfigured, isSmsSenderConfigured } from "../services/otpSenders";
+import {
+  buildGoogleAuthUrl,
+  createGoogleAuthState,
+  exchangeCodeForProfile,
+  isGoogleConfigured,
+} from "../services/googleOAuth";
+import {
+  createEmailSender,
+  createSmsSender,
+  isEmailSenderConfigured,
+  isSmsSenderConfigured,
+} from "../services/otpSenders";
 
 function getJwtSecret() {
   return process.env.JWT_SECRET || "dev_jwt_secret_change_me";
 }
 
-function signToken(payload: { id: string; email?: string; phone?: string; name?: string }) {
-  return jwt.sign(payload, getJwtSecret(), { algorithm: "HS256", expiresIn: "7d" });
+function signToken(payload: {
+  id: string;
+  email?: string;
+  phone?: string;
+  name?: string;
+}) {
+  return jwt.sign(payload, getJwtSecret(), {
+    algorithm: "HS256",
+    expiresIn: "7d",
+  });
 }
 
 function getFrontendBaseUrl(req: Request) {
@@ -42,7 +60,9 @@ router.get("/config", (_req: Request, res: Response) => {
 
 router.get("/google", (_req: Request, res: Response) => {
   if (!isGoogleConfigured()) {
-    res.redirect(`${getFrontendBaseUrl(_req)}/auth?error=google_not_configured`);
+    res.redirect(
+      `${getFrontendBaseUrl(_req)}/auth?error=google_not_configured`
+    );
     return;
   }
   const state = createGoogleAuthState();
@@ -52,17 +72,24 @@ router.get("/google", (_req: Request, res: Response) => {
     sameSite: "lax",
     maxAge: 10 * 60 * 1000,
   });
-  res.redirect(buildGoogleAuthUrl({ state, redirectUri: getGoogleRedirectUri(_req) }));
+  res.redirect(
+    buildGoogleAuthUrl({ state, redirectUri: getGoogleRedirectUri(_req) })
+  );
 });
 
 router.get("/google/callback", async (req: Request, res: Response) => {
-  const query = z.object({ code: z.string().min(1), state: z.string().min(1) }).safeParse(req.query);
+  const query = z
+    .object({ code: z.string().min(1), state: z.string().min(1) })
+    .safeParse(req.query);
   if (!query.success) {
-    res.status(400).json({ error: "INVALID_QUERY", details: query.error.flatten() });
+    res
+      .status(400)
+      .json({ error: "INVALID_QUERY", details: query.error.flatten() });
     return;
   }
 
-  const expectedState = (req.cookies as Record<string, unknown> | undefined)?.deepenk_google_state;
+  const expectedState = (req.cookies as Record<string, unknown> | undefined)
+    ?.deepenk_google_state;
   if (typeof expectedState !== "string" || expectedState !== query.data.state) {
     res.status(400).json({ error: "INVALID_STATE" });
     return;
@@ -73,13 +100,20 @@ router.get("/google/callback", async (req: Request, res: Response) => {
     return;
   }
 
-  const profile = await exchangeCodeForProfile({ code: query.data.code, redirectUri: getGoogleRedirectUri(req) });
+  const profile = await exchangeCodeForProfile({
+    code: query.data.code,
+    redirectUri: getGoogleRedirectUri(req),
+  });
   if (!profile.email) {
     res.status(400).json({ error: "GOOGLE_NO_EMAIL" });
     return;
   }
 
-  const user = await userRepo.upsertByEmail({ email: profile.email, name: profile.name, provider: "google" });
+  const user = await userRepo.upsertByEmail({
+    email: profile.email,
+    name: profile.name,
+    provider: "google",
+  });
 
   const token = signToken({ id: user.id, email: user.email, name: user.name });
   res.cookie("deepenk_token", token, {
@@ -94,7 +128,9 @@ router.get("/google/callback", async (req: Request, res: Response) => {
 router.post("/login", async (req: Request, res: Response) => {
   const parsed = EmailLoginSchema.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: "INVALID_BODY", details: parsed.error.flatten() });
+    res
+      .status(400)
+      .json({ error: "INVALID_BODY", details: parsed.error.flatten() });
     return;
   }
 
@@ -124,14 +160,14 @@ router.post("/otp/request", async (req: Request, res: Response) => {
     .safeParse(req.body);
 
   if (!parsed.success) {
-    res.status(400).json({ error: "INVALID_BODY", details: parsed.error.flatten() });
+    res
+      .status(400)
+      .json({ error: "INVALID_BODY", details: parsed.error.flatten() });
     return;
   }
 
   const destination =
-    parsed.data.channel === "email"
-      ? parsed.data.email
-      : parsed.data.phone;
+    parsed.data.channel === "email" ? parsed.data.email : parsed.data.phone;
   if (!destination) {
     res.status(400).json({ error: "MISSING_DESTINATION" });
     return;
@@ -174,11 +210,14 @@ router.post("/otp/request", async (req: Request, res: Response) => {
 router.post("/otp/resend", async (req: Request, res: Response) => {
   const parsed = z.object({ requestId: z.string().min(1) }).safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: "INVALID_BODY", details: parsed.error.flatten() });
+    res
+      .status(400)
+      .json({ error: "INVALID_BODY", details: parsed.error.flatten() });
     return;
   }
   try {
-    const { requestId, expiresAt, otp, channel, destination } = await otpService.resendOtp({ requestId: parsed.data.requestId });
+    const { requestId, expiresAt, otp, channel, destination } =
+      await otpService.resendOtp({ requestId: parsed.data.requestId });
 
     if (process.env.NODE_ENV === "production") {
       if (channel === "email" && !isEmailSenderConfigured()) {
@@ -198,7 +237,9 @@ router.post("/otp/resend", async (req: Request, res: Response) => {
         await smsSender.send({ to: destination, code: otp });
       }
     } catch (e) {
-      res.status(502).json({ error: String(e instanceof Error ? e.message : e) });
+      res
+        .status(502)
+        .json({ error: String(e instanceof Error ? e.message : e) });
       return;
     }
 
@@ -213,20 +254,35 @@ router.post("/otp/resend", async (req: Request, res: Response) => {
 });
 
 router.post("/otp/verify", async (req: Request, res: Response) => {
-  const parsed = z.object({ requestId: z.string().min(1), otp: z.string().min(4).max(10) }).safeParse(req.body);
+  const parsed = z
+    .object({ requestId: z.string().min(1), otp: z.string().min(4).max(10) })
+    .safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: "INVALID_BODY", details: parsed.error.flatten() });
+    res
+      .status(400)
+      .json({ error: "INVALID_BODY", details: parsed.error.flatten() });
     return;
   }
 
   try {
-    const verified = await otpService.verifyOtp({ requestId: parsed.data.requestId, otp: parsed.data.otp });
+    const verified = await otpService.verifyOtp({
+      requestId: parsed.data.requestId,
+      otp: parsed.data.otp,
+    });
     const user =
       verified.channel === "email"
-        ? await userRepo.upsertByEmail({ email: verified.destination, provider: "email" })
+        ? await userRepo.upsertByEmail({
+            email: verified.destination,
+            provider: "email",
+          })
         : await userRepo.upsertByPhone({ phone: verified.destination });
 
-    const token = signToken({ id: user.id, email: user.email, phone: user.phone, name: user.name });
+    const token = signToken({
+      id: user.id,
+      email: user.email,
+      phone: user.phone,
+      name: user.name,
+    });
     res.cookie("deepenk_token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -254,9 +310,13 @@ router.get("/me", authOptional(), async (req: Request, res: Response) => {
   res.json({ user });
 });
 
-router.get("/me/required", authRequired(), async (req: Request, res: Response) => {
-  const user = await userRepo.getById(req.ctx!.userId!);
-  res.json({ user });
-});
+router.get(
+  "/me/required",
+  authRequired(),
+  async (req: Request, res: Response) => {
+    const user = await userRepo.getById(req.ctx!.userId!);
+    res.json({ user });
+  }
+);
 
 export default router;

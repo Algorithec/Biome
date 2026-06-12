@@ -79,7 +79,8 @@ function pickNumber(v: unknown, keys: string[]): number | undefined {
   for (const k of keys) {
     const val = o[k];
     if (typeof val === "number" && Number.isFinite(val)) return val;
-    if (typeof val === "string" && val.trim() && Number.isFinite(Number(val))) return Number(val);
+    if (typeof val === "string" && val.trim() && Number.isFinite(Number(val)))
+      return Number(val);
   }
   return undefined;
 }
@@ -103,7 +104,11 @@ function normalizeRideType(v: string | undefined): RideType {
   return "cab";
 }
 
-async function fetchJsonWithTimeout(url: string, headers: Record<string, string>, timeoutMs = 8000): Promise<unknown> {
+async function fetchJsonWithTimeout(
+  url: string,
+  headers: Record<string, string>,
+  timeoutMs = 8000
+): Promise<unknown> {
   const controller = new AbortController();
   const t = setTimeout(() => controller.abort(), timeoutMs);
   try {
@@ -132,32 +137,79 @@ async function rapidApiFareEstimateForProvider(input: {
     .replaceAll("{dropoff_lat}", encodeURIComponent(String(input.dropoff.lat)))
     .replaceAll("{dropoff_lng}", encodeURIComponent(String(input.dropoff.lng)));
   const u = new URL(rawUrl);
-  if (!cfg.url.includes("{pickup_lat}") && !u.searchParams.has("pickup_lat")) u.searchParams.set("pickup_lat", String(input.pickup.lat));
-  if (!cfg.url.includes("{pickup_lng}") && !u.searchParams.has("pickup_lng")) u.searchParams.set("pickup_lng", String(input.pickup.lng));
-  if (!cfg.url.includes("{dropoff_lat}") && !u.searchParams.has("dropoff_lat")) u.searchParams.set("dropoff_lat", String(input.dropoff.lat));
-  if (!cfg.url.includes("{dropoff_lng}") && !u.searchParams.has("dropoff_lng")) u.searchParams.set("dropoff_lng", String(input.dropoff.lng));
+  if (!cfg.url.includes("{pickup_lat}") && !u.searchParams.has("pickup_lat"))
+    u.searchParams.set("pickup_lat", String(input.pickup.lat));
+  if (!cfg.url.includes("{pickup_lng}") && !u.searchParams.has("pickup_lng"))
+    u.searchParams.set("pickup_lng", String(input.pickup.lng));
+  if (!cfg.url.includes("{dropoff_lat}") && !u.searchParams.has("dropoff_lat"))
+    u.searchParams.set("dropoff_lat", String(input.dropoff.lat));
+  if (!cfg.url.includes("{dropoff_lng}") && !u.searchParams.has("dropoff_lng"))
+    u.searchParams.set("dropoff_lng", String(input.dropoff.lng));
 
   const json = await fetchJsonWithTimeout(
     u.toString(),
     { "x-rapidapi-key": apiKey, "x-rapidapi-host": cfg.host },
-    8000,
+    8000
   ).catch(() => {
     throw new Error(`RAPIDAPI_${input.provider}_FARE_FAILED`);
   });
 
   const arr =
     (Array.isArray(json) ? json : undefined) ||
-    pickArray(json, ["quotes", "data", "items", "results", "result", "response"]);
+    pickArray(json, [
+      "quotes",
+      "data",
+      "items",
+      "results",
+      "result",
+      "response",
+    ]);
 
   const toQuote = (x: unknown): RideQuote | null => {
-    const type = normalizeRideType(pickString(x, ["type", "ride_type", "vehicle_type", "vehicleType", "category"]));
-    const fare = pickNumber(x, ["fare", "price", "amount", "estimated_fare", "estimatedFare"]);
-    const eta = pickNumber(x, ["eta", "etaMinutes", "eta_minutes", "pickup_eta", "pickupEta"]);
+    const type = normalizeRideType(
+      pickString(x, [
+        "type",
+        "ride_type",
+        "vehicle_type",
+        "vehicleType",
+        "category",
+      ])
+    );
+    const fare = pickNumber(x, [
+      "fare",
+      "price",
+      "amount",
+      "estimated_fare",
+      "estimatedFare",
+    ]);
+    const eta = pickNumber(x, [
+      "eta",
+      "etaMinutes",
+      "eta_minutes",
+      "pickup_eta",
+      "pickupEta",
+    ]);
     if (typeof fare !== "number") return null;
-    const driverRating = clamp(pickNumber(x, ["driverRating", "rating", "driver_rating"]) ?? 4.5, 0, 5);
-    const surgeMultiplier = pickNumber(x, ["surge", "surgeMultiplier", "surge_multiplier"]);
-    const deeplinkUrl = pickString(x, ["deeplink", "deeplinkUrl", "url", "link"]) || "https://example.com/checkout";
-    const externalId = pickString(x, ["id", "quote_id", "quoteId", "estimate_id", "estimateId"]);
+    const driverRating = clamp(
+      pickNumber(x, ["driverRating", "rating", "driver_rating"]) ?? 4.5,
+      0,
+      5
+    );
+    const surgeMultiplier = pickNumber(x, [
+      "surge",
+      "surgeMultiplier",
+      "surge_multiplier",
+    ]);
+    const deeplinkUrl =
+      pickString(x, ["deeplink", "deeplinkUrl", "url", "link"]) ||
+      "https://example.com/checkout";
+    const externalId = pickString(x, [
+      "id",
+      "quote_id",
+      "quoteId",
+      "estimate_id",
+      "estimateId",
+    ]);
     const stablePart =
       externalId ??
       hashHex12(
@@ -170,7 +222,7 @@ async function rapidApiFareEstimateForProvider(input: {
           String(input.pickup.lng),
           String(input.dropoff.lat),
           String(input.dropoff.lng),
-        ].join("|"),
+        ].join("|")
       );
     return {
       id: `rd_${input.provider.toLowerCase()}_${stablePart}`,
@@ -180,7 +232,10 @@ async function rapidApiFareEstimateForProvider(input: {
       etaMinutes: clamp(Math.round(eta ?? 10), 1, 180),
       driverRating: Number(driverRating.toFixed(1)),
       distanceKm: input.distanceKm,
-      surgeMultiplier: typeof surgeMultiplier === "number" && surgeMultiplier > 1 ? Number(surgeMultiplier.toFixed(2)) : undefined,
+      surgeMultiplier:
+        typeof surgeMultiplier === "number" && surgeMultiplier > 1
+          ? Number(surgeMultiplier.toFixed(2))
+          : undefined,
       deeplinkUrl,
     };
   };
@@ -199,7 +254,10 @@ async function rapidApiFareEstimateForProvider(input: {
 }
 
 export class RidesService {
-  async getFareEstimate(input: { pickup: LatLng; dropoff: LatLng }): Promise<{ quotes: RideQuote[] }> {
+  async getFareEstimate(input: {
+    pickup: LatLng;
+    dropoff: LatLng;
+  }): Promise<{ quotes: RideQuote[] }> {
     const dist = Number(distanceKm(input.pickup, input.dropoff).toFixed(1));
     const baseEta = clamp(Math.round(5 + dist * 3), 4, 60);
 
@@ -209,19 +267,40 @@ export class RidesService {
     const quotes: RideQuote[] = [];
     for (const provider of providers) {
       try {
-        const real = await rapidApiFareEstimateForProvider({ provider, pickup: input.pickup, dropoff: input.dropoff, distanceKm: dist });
+        const real = await rapidApiFareEstimateForProvider({
+          provider,
+          pickup: input.pickup,
+          dropoff: input.dropoff,
+          distanceKm: dist,
+        });
         if (real && real.length) {
           quotes.push(...real);
           continue;
         }
-      } catch {
-      }
+      } catch {}
 
       for (const type of types) {
-        const rng = mulberry32(seedFrom([provider, type, String(input.pickup.lat), String(input.pickup.lng), String(input.dropoff.lat), String(input.dropoff.lng)].join("|")));
+        const rng = mulberry32(
+          seedFrom(
+            [
+              provider,
+              type,
+              String(input.pickup.lat),
+              String(input.pickup.lng),
+              String(input.dropoff.lat),
+              String(input.dropoff.lng),
+            ].join("|")
+          )
+        );
         const surge = rng() > 0.75 ? Number((1 + rng() * 0.6).toFixed(2)) : 1;
         const perKm =
-          type === "bike" ? 10 : type === "auto" ? 14 : type === "cab" ? 18 : 28;
+          type === "bike"
+            ? 10
+            : type === "auto"
+              ? 14
+              : type === "cab"
+                ? 18
+                : 28;
         const base = 35 + dist * perKm;
         const fare = Math.round(base * surge);
 
@@ -230,7 +309,13 @@ export class RidesService {
           provider,
           type,
           fare,
-          etaMinutes: clamp(baseEta + (type === "premium" ? -1 : type === "bike" ? 2 : 0) + Math.round(rng() * 4), 3, 75),
+          etaMinutes: clamp(
+            baseEta +
+              (type === "premium" ? -1 : type === "bike" ? 2 : 0) +
+              Math.round(rng() * 4),
+            3,
+            75
+          ),
           driverRating: Number((4.4 + rng() * 0.6).toFixed(1)),
           distanceKm: dist,
           surgeMultiplier: surge > 1 ? surge : undefined,

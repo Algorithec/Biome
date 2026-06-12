@@ -46,7 +46,13 @@ export class OtpService {
       resendCount: 0,
     });
 
-    return { requestId, expiresAt: now + this.config.ttlMs, otp, channel: input.channel, destination };
+    return {
+      requestId,
+      expiresAt: now + this.config.ttlMs,
+      otp,
+      channel: input.channel,
+      destination,
+    };
   }
 
   async resendOtp(input: { requestId: string }) {
@@ -95,7 +101,9 @@ export class OtpService {
     const expected = record.otpHash;
     const actual = sha256(`${record.requestId}:${input.otp}`);
     if (expected !== actual) {
-      await this.store.update(record.requestId, { attemptsLeft: record.attemptsLeft - 1 });
+      await this.store.update(record.requestId, {
+        attemptsLeft: record.attemptsLeft - 1,
+      });
       throw new Error("OTP_INVALID");
     }
 

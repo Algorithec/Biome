@@ -23,4 +23,3 @@ export class TTLCache<T> {
     this.store.set(key, { value, expiresAt: Date.now() + ttl });
   }
 }
-

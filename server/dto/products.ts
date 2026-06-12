@@ -27,4 +27,3 @@ export const AlternativesQuerySchema = z.object({
 });
 
 export type AlternativesQueryDto = z.infer<typeof AlternativesQuerySchema>;
-

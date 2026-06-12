@@ -1,14 +1,29 @@
 import { nanoid } from "nanoid";
-import type { ClickEventEntity, OrderEntity, SearchHistoryEntity, UserEntity } from "../entities";
+import type {
+  ClickEventEntity,
+  OrderEntity,
+  SearchHistoryEntity,
+  UserEntity,
+} from "../entities";
 
 export class InMemoryUserRepo {
   private users = new Map<string, UserEntity>();
 
-  async upsertByEmail(input: { email: string; name?: string; provider: "email" | "google" }) {
-    const existing = Array.from(this.users.values()).find((u) => u.email === input.email);
+  async upsertByEmail(input: {
+    email: string;
+    name?: string;
+    provider: "email" | "google";
+  }) {
+    const existing = Array.from(this.users.values()).find(
+      u => u.email === input.email
+    );
     const now = new Date().toISOString();
     if (existing) {
-      const updated: UserEntity = { ...existing, name: input.name ?? existing.name, lastLogin: now };
+      const updated: UserEntity = {
+        ...existing,
+        name: input.name ?? existing.name,
+        lastLogin: now,
+      };
       this.users.set(updated.id, updated);
       return updated;
     }
@@ -25,10 +40,17 @@ export class InMemoryUserRepo {
   }
 
   async upsertByPhone(input: { phone: string; name?: string }) {
-    const existing = Array.from(this.users.values()).find((u) => u.phone === input.phone);
+    const existing = Array.from(this.users.values()).find(
+      u => u.phone === input.phone
+    );
     const now = new Date().toISOString();
     if (existing) {
-      const updated: UserEntity = { ...existing, name: input.name ?? existing.name, lastLogin: now, provider: "phone" };
+      const updated: UserEntity = {
+        ...existing,
+        name: input.name ?? existing.name,
+        lastLogin: now,
+        provider: "phone",
+      };
       this.users.set(updated.id, updated);
       return updated;
     }
@@ -48,7 +70,10 @@ export class InMemoryUserRepo {
     return this.users.get(id) ?? null;
   }
 
-  async updateById(id: string, patch: Partial<Pick<UserEntity, "name" | "preferences">>) {
+  async updateById(
+    id: string,
+    patch: Partial<Pick<UserEntity, "name" | "preferences">>
+  ) {
     const existing = await this.getById(id);
     if (!existing) return null;
     const updated: UserEntity = { ...existing, ...patch };
@@ -76,7 +101,7 @@ export class InMemorySearchRepo {
 
   async listByUser(userId: string, limit = 20) {
     return Array.from(this.searches.values())
-      .filter((s) => s.userId === userId)
+      .filter(s => s.userId === userId)
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
       .slice(0, limit);
   }
@@ -97,7 +122,7 @@ export class InMemoryClickRepo {
 
   async listByUser(userId: string, limit = 50) {
     return Array.from(this.clicks.values())
-      .filter((c) => c.userId === userId)
+      .filter(c => c.userId === userId)
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
       .slice(0, limit);
   }
@@ -124,22 +149,39 @@ export class InMemoryOrderRepo {
 
   async listByUser(userId: string, limit = 50) {
     return Array.from(this.orders.values())
-      .filter((o) => o.userId === userId)
+      .filter(o => o.userId === userId)
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
       .slice(0, limit);
   }
 
-  async updateById(id: string, patch: Partial<Pick<OrderEntity, "status" | "paymentIntentId" | "metadata" | "title" | "amount" | "itemUrl">>) {
+  async updateById(
+    id: string,
+    patch: Partial<
+      Pick<
+        OrderEntity,
+        | "status"
+        | "paymentIntentId"
+        | "metadata"
+        | "title"
+        | "amount"
+        | "itemUrl"
+      >
+    >
+  ) {
     const existing = await this.getById(id);
     if (!existing) return null;
-    const updated: OrderEntity = { ...existing, ...patch, updatedAt: new Date().toISOString() };
+    const updated: OrderEntity = {
+      ...existing,
+      ...patch,
+      updatedAt: new Date().toISOString(),
+    };
     this.orders.set(updated.id, updated);
     return updated;
   }
 
   async listByStatus(status: OrderEntity["status"], limit = 50) {
     return Array.from(this.orders.values())
-      .filter((o) => o.status === status)
+      .filter(o => o.status === status)
       .sort((a, b) => a.updatedAt.localeCompare(b.updatedAt))
       .slice(0, limit);
   }

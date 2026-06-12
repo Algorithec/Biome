@@ -13,7 +13,10 @@ export interface LlmClient {
 }
 
 export class StubLlmClient implements LlmClient {
-  async completeJson<T>(input: { system: string; user: string }): Promise<LlmJsonResult<T>> {
+  async completeJson<T>(input: {
+    system: string;
+    user: string;
+  }): Promise<LlmJsonResult<T>> {
     return { data: { system: input.system, user: input.user } as unknown as T };
   }
 }
@@ -87,12 +90,20 @@ export class GeminiClient implements LlmClient {
     const firstObj = trimmed.indexOf("{");
     const firstArr = trimmed.indexOf("[");
     const start =
-      firstObj === -1 ? firstArr : firstArr === -1 ? firstObj : Math.min(firstObj, firstArr);
+      firstObj === -1
+        ? firstArr
+        : firstArr === -1
+          ? firstObj
+          : Math.min(firstObj, firstArr);
     if (start === -1) return null;
     return trimmed.slice(start);
   }
 
-  async completeJson<T>(input: { system: string; user: string; schemaHint?: string }): Promise<LlmJsonResult<T>> {
+  async completeJson<T>(input: {
+    system: string;
+    user: string;
+    schemaHint?: string;
+  }): Promise<LlmJsonResult<T>> {
     const url = new URL(
       `/v1beta/models/${encodeURIComponent(this.config.model)}:generateContent`,
       "https://generativelanguage.googleapis.com"
@@ -125,7 +136,10 @@ export class GeminiClient implements LlmClient {
     }
 
     const json = (await resp.json()) as any;
-    const content = json?.candidates?.[0]?.content?.parts?.map((p: any) => p?.text).filter(Boolean).join("\n");
+    const content = json?.candidates?.[0]?.content?.parts
+      ?.map((p: any) => p?.text)
+      .filter(Boolean)
+      .join("\n");
     if (typeof content !== "string" || content.length === 0) {
       throw new Error("LLM_EMPTY_RESPONSE");
     }
@@ -137,7 +151,10 @@ export class GeminiClient implements LlmClient {
 }
 
 export function createLlmClient(): LlmClient {
-  const geminiApiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_API_KEY || process.env.GOOGLE_API_KEY;
+  const geminiApiKey =
+    process.env.GEMINI_API_KEY ||
+    process.env.GOOGLE_AI_API_KEY ||
+    process.env.GOOGLE_API_KEY;
   const geminiModel = process.env.GEMINI_MODEL || "gemini-1.5-flash";
   if (geminiApiKey) {
     return new GeminiClient({ apiKey: geminiApiKey, model: geminiModel });

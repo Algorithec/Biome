@@ -40,7 +40,7 @@ class PriceService {
       const prices: PriceData[] = [
         {
           itemId,
-          platform: 'Amazon',
+          platform: "Amazon",
           price: 64999,
           originalPrice: 89999,
           discount: 28,
@@ -48,7 +48,7 @@ class PriceService {
         },
         {
           itemId,
-          platform: 'Flipkart',
+          platform: "Flipkart",
           price: 62999,
           originalPrice: 89999,
           discount: 30,
@@ -56,7 +56,7 @@ class PriceService {
         },
         {
           itemId,
-          platform: 'Croma',
+          platform: "Croma",
           price: 65999,
           originalPrice: 89999,
           discount: 27,
@@ -68,7 +68,7 @@ class PriceService {
       this.priceCache.set(itemId, prices);
       return prices;
     } catch (error) {
-      console.error('Price aggregation failed:', error);
+      console.error("Price aggregation failed:", error);
       throw error;
     }
   }
@@ -90,7 +90,7 @@ class PriceService {
           )
         : null;
     } catch (error) {
-      console.error('Failed to get best price:', error);
+      console.error("Failed to get best price:", error);
       throw error;
     }
   }
@@ -113,12 +113,12 @@ class PriceService {
       const prediction = {
         predictedPrice: 59999,
         confidence: 0.85,
-        recommendation: 'Wait 3-5 days for potential price drop',
+        recommendation: "Wait 3-5 days for potential price drop",
       };
 
       return prediction;
     } catch (error) {
-      console.error('Price prediction failed:', error);
+      console.error("Price prediction failed:", error);
       throw error;
     }
   }
@@ -126,11 +126,13 @@ class PriceService {
   /**
    * Create price alert
    */
-  async createPriceAlert(alert: Omit<PriceAlert, 'id' | 'createdAt'>): Promise<PriceAlert> {
+  async createPriceAlert(
+    alert: Omit<PriceAlert, "id" | "createdAt">
+  ): Promise<PriceAlert> {
     try {
       return await priceAlertsRepo.create(alert);
     } catch (error) {
-      console.error('Failed to create price alert:', error);
+      console.error("Failed to create price alert:", error);
       throw error;
     }
   }
@@ -146,9 +148,12 @@ class PriceService {
   /**
    * Check and trigger price alerts
    */
-  async checkPriceAlerts(): Promise<Array<{ alert: PriceAlert; newPrice: number }>> {
+  async checkPriceAlerts(): Promise<
+    Array<{ alert: PriceAlert; newPrice: number }>
+  > {
     try {
-      const triggeredAlerts: Array<{ alert: PriceAlert; newPrice: number }> = [];
+      const triggeredAlerts: Array<{ alert: PriceAlert; newPrice: number }> =
+        [];
       const allActive = await priceAlertsRepo.listAllActive(200);
 
       for (const alert of allActive) {
@@ -161,7 +166,7 @@ class PriceService {
 
       return triggeredAlerts;
     } catch (error) {
-      console.error('Failed to check price alerts:', error);
+      console.error("Failed to check price alerts:", error);
       throw error;
     }
   }
@@ -191,7 +196,7 @@ class PriceService {
 
       return history;
     } catch (error) {
-      console.error('Failed to fetch price history:', error);
+      console.error("Failed to fetch price history:", error);
       throw error;
     }
   }

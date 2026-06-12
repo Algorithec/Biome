@@ -1,6 +1,6 @@
-import { motion } from 'framer-motion';
-import { Sparkles, TrendingDown, CheckCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { motion } from "framer-motion";
+import { Sparkles, TrendingDown, CheckCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface AIRecommendationCardProps {
   title: string;
@@ -19,7 +19,7 @@ export default function AIRecommendationCard({
   savings,
   confidence,
   platform,
-  icon = '⭐',
+  icon = "⭐",
   onViewDetails,
   delay = 0,
 }: AIRecommendationCardProps) {
@@ -54,7 +54,9 @@ export default function AIRecommendationCard({
             <TrendingDown className="w-4 h-4 text-orange-600" />
             <span className="text-xs text-muted-foreground">You Save</span>
           </div>
-          <p className="text-lg font-bold text-orange-600">₹{savings.toLocaleString()}</p>
+          <p className="text-lg font-bold text-orange-600">
+            ₹{savings.toLocaleString()}
+          </p>
         </div>
 
         <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg p-3">
@@ -62,7 +64,9 @@ export default function AIRecommendationCard({
             <CheckCircle className="w-4 h-4 text-blue-600" />
             <span className="text-xs text-muted-foreground">AI Confidence</span>
           </div>
-          <p className="text-lg font-bold text-blue-600">{(confidence * 100).toFixed(0)}%</p>
+          <p className="text-lg font-bold text-blue-600">
+            {(confidence * 100).toFixed(0)}%
+          </p>
         </div>
       </div>
 

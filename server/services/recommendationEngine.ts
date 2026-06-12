@@ -6,7 +6,7 @@
 export interface UserPreferences {
   domain: string;
   budget?: number;
-  deliveryPreference?: 'fastest' | 'cheapest' | 'balanced';
+  deliveryPreference?: "fastest" | "cheapest" | "balanced";
   qualityThreshold?: number;
   paymentMethods?: string[];
 }
@@ -47,7 +47,7 @@ class RecommendationEngine {
 
       return recommendations;
     } catch (error) {
-      console.error('Recommendation generation failed:', error);
+      console.error("Recommendation generation failed:", error);
       throw error;
     }
   }
@@ -59,7 +59,7 @@ class RecommendationEngine {
     // This would use NLP/LLM in production
     // For now, simple keyword extraction
     return {
-      keywords: query.toLowerCase().split(' '),
+      keywords: query.toLowerCase().split(" "),
       budget: this.extractBudget(query),
       features: this.extractFeatures(query),
       timeframe: this.extractTimeframe(query),
@@ -73,7 +73,7 @@ class RecommendationEngine {
     const budgetMatch = query.match(/under\s*₹?([\d,]+)|₹?([\d,]+)\s*budget/i);
     if (budgetMatch) {
       const amount = budgetMatch[1] || budgetMatch[2];
-      return parseInt(amount.replace(/,/g, ''), 10);
+      return parseInt(amount.replace(/,/g, ""), 10);
     }
     return null;
   }
@@ -84,16 +84,16 @@ class RecommendationEngine {
   private extractFeatures(query: string): string[] {
     // Simple keyword extraction
     const featureKeywords = [
-      'gaming',
-      'performance',
-      'battery',
-      'display',
-      'camera',
-      'fast',
-      'lightweight',
-      'premium',
+      "gaming",
+      "performance",
+      "battery",
+      "display",
+      "camera",
+      "fast",
+      "lightweight",
+      "premium",
     ];
-    return featureKeywords.filter((keyword) =>
+    return featureKeywords.filter(keyword =>
       query.toLowerCase().includes(keyword)
     );
   }
@@ -102,9 +102,9 @@ class RecommendationEngine {
    * Extract timeframe from query
    */
   private extractTimeframe(query: string): string | null {
-    if (query.match(/today|immediate|urgent/i)) return 'today';
-    if (query.match(/this week|week/i)) return 'week';
-    if (query.match(/this month|month/i)) return 'month';
+    if (query.match(/today|immediate|urgent/i)) return "today";
+    if (query.match(/this week|week/i)) return "week";
+    if (query.match(/this month|month/i)) return "month";
     return null;
   }
 
@@ -116,31 +116,31 @@ class RecommendationEngine {
     // For now, returning mock data
     return [
       {
-        id: '1',
-        name: 'Gaming Laptop Pro',
+        id: "1",
+        name: "Gaming Laptop Pro",
         price: 64999,
-        platform: 'Flipkart',
+        platform: "Flipkart",
         rating: 4.8,
         reviews: 2341,
-        features: ['RTX 4060', '16GB RAM', '512GB SSD'],
+        features: ["RTX 4060", "16GB RAM", "512GB SSD"],
       },
       {
-        id: '2',
-        name: 'Gaming Laptop Max',
+        id: "2",
+        name: "Gaming Laptop Max",
         price: 74999,
-        platform: 'Amazon',
+        platform: "Amazon",
         rating: 4.7,
         reviews: 1892,
-        features: ['RTX 4070', '32GB RAM', '1TB SSD'],
+        features: ["RTX 4070", "32GB RAM", "1TB SSD"],
       },
       {
-        id: '3',
-        name: 'Budget Gaming Laptop',
+        id: "3",
+        name: "Budget Gaming Laptop",
         price: 49999,
-        platform: 'Croma',
+        platform: "Croma",
         rating: 4.5,
         reviews: 892,
-        features: ['RTX 3050', '8GB RAM', '256GB SSD'],
+        features: ["RTX 3050", "8GB RAM", "256GB SSD"],
       },
     ];
   }
@@ -174,50 +174,53 @@ class RecommendationEngine {
   /**
    * Create recommendation objects
    */
-  private createRecommendations(rankedItems: any[], intent: any): Recommendation[] {
+  private createRecommendations(
+    rankedItems: any[],
+    intent: any
+  ): Recommendation[] {
     const recommendations: Recommendation[] = [];
 
     // Best overall
     if (rankedItems.length > 0) {
       recommendations.push({
-        id: 'rec_best',
-        title: 'Best Overall Deal',
+        id: "rec_best",
+        title: "Best Overall Deal",
         description: rankedItems[0].name,
         items: [rankedItems[0]],
         savings: Math.round(Math.random() * 5000),
         confidence: 0.95,
-        reason: 'Highest rated with best price-to-performance ratio',
-        domain: 'ecommerce',
+        reason: "Highest rated with best price-to-performance ratio",
+        domain: "ecommerce",
       });
     }
 
     // Budget option
-    const budgetOption = rankedItems.find((item) => item.price < 50000);
+    const budgetOption = rankedItems.find(item => item.price < 50000);
     if (budgetOption) {
       recommendations.push({
-        id: 'rec_budget',
-        title: 'Best Budget Option',
+        id: "rec_budget",
+        title: "Best Budget Option",
         description: budgetOption.name,
         items: [budgetOption],
         savings: Math.round(Math.random() * 3000),
         confidence: 0.88,
-        reason: 'Great value for money',
-        domain: 'ecommerce',
+        reason: "Great value for money",
+        domain: "ecommerce",
       });
     }
 
     // Premium option
-    const premiumOption = rankedItems.find((item) => item.price > 70000);
+    const premiumOption = rankedItems.find(item => item.price > 70000);
     if (premiumOption) {
       recommendations.push({
-        id: 'rec_premium',
-        title: 'Premium Choice',
+        id: "rec_premium",
+        title: "Premium Choice",
         description: premiumOption.name,
         items: [premiumOption],
         savings: Math.round(Math.random() * 2000),
         confidence: 0.92,
-        reason: 'Top-tier performance and features',
-        domain: 'ecommerce',
+        reason: "Top-tier performance and features",
+        domain: "ecommerce",
       });
     }
 
@@ -227,13 +230,15 @@ class RecommendationEngine {
   /**
    * Get personalized recommendations for user
    */
-  async getPersonalizedRecommendations(userId: string): Promise<Recommendation[]> {
+  async getPersonalizedRecommendations(
+    userId: string
+  ): Promise<Recommendation[]> {
     try {
       // This would fetch user history and preferences
       // Generate recommendations based on past behavior
       return [];
     } catch (error) {
-      console.error('Failed to get personalized recommendations:', error);
+      console.error("Failed to get personalized recommendations:", error);
       throw error;
     }
   }

@@ -1,6 +1,6 @@
-import { motion } from 'framer-motion';
-import { ChevronRight } from 'lucide-react';
-import { Link } from 'wouter';
+import { motion } from "framer-motion";
+import { ChevronRight } from "lucide-react";
+import { Link } from "wouter";
 
 interface DomainCardProps {
   icon: string;

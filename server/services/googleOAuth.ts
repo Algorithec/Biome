@@ -14,14 +14,19 @@ function requiredEnv(name: string) {
 }
 
 export function isGoogleConfigured() {
-  return Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
+  return Boolean(
+    process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+  );
 }
 
 export function createGoogleAuthState() {
   return crypto.randomBytes(16).toString("hex");
 }
 
-export function buildGoogleAuthUrl(input: { state: string; redirectUri: string }) {
+export function buildGoogleAuthUrl(input: {
+  state: string;
+  redirectUri: string;
+}) {
   const clientId = requiredEnv("GOOGLE_CLIENT_ID");
 
   const url = new URL("https://accounts.google.com/o/oauth2/v2/auth");
@@ -35,7 +40,10 @@ export function buildGoogleAuthUrl(input: { state: string; redirectUri: string }
   return url.toString();
 }
 
-export async function exchangeCodeForProfile(input: { code: string; redirectUri: string }) {
+export async function exchangeCodeForProfile(input: {
+  code: string;
+  redirectUri: string;
+}) {
   const clientId = requiredEnv("GOOGLE_CLIENT_ID");
   const clientSecret = requiredEnv("GOOGLE_CLIENT_SECRET");
 
@@ -51,13 +59,17 @@ export async function exchangeCodeForProfile(input: { code: string; redirectUri:
     }),
   });
 
-  if (!tokenResp.ok) throw new Error(`GOOGLE_TOKEN_EXCHANGE_${tokenResp.status}`);
+  if (!tokenResp.ok)
+    throw new Error(`GOOGLE_TOKEN_EXCHANGE_${tokenResp.status}`);
   const tokenJson = (await tokenResp.json()) as { access_token?: string };
   if (!tokenJson.access_token) throw new Error("GOOGLE_NO_ACCESS_TOKEN");
 
-  const profileResp = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
-    headers: { authorization: `Bearer ${tokenJson.access_token}` },
-  });
+  const profileResp = await fetch(
+    "https://www.googleapis.com/oauth2/v3/userinfo",
+    {
+      headers: { authorization: `Bearer ${tokenJson.access_token}` },
+    }
+  );
   if (!profileResp.ok) throw new Error(`GOOGLE_PROFILE_${profileResp.status}`);
   const profile = (await profileResp.json()) as GoogleProfile;
   return profile;
