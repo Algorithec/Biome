@@ -15,7 +15,7 @@ import qualified Data.Text.Encoding as TE
 import qualified Data.CaseInsensitive as CI
 import Network.HTTP.Client
 import Network.HTTP.Client.TLS (tlsManagerSettings)
-import Network.HTTP.Types (hAccept, hContentType, methodGet, methodPost, statusCode)
+import Network.HTTP.Types (RequestHeaders, hAccept, hContentType, methodGet, methodPost, statusCode)
 import Payments.Config
 import Payments.Types
 

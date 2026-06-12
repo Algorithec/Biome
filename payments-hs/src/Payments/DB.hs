@@ -22,7 +22,7 @@ import qualified Data.ByteString.Lazy as LBS
 import Data.Text (Text)
 import qualified Data.Text.Encoding as TE
 import Database.SQLite.Simple
-import Database.SQLite.Simple.FromRow
+import Database.SQLite.Simple.FromRow ()
 import Payments.Types
 
 newtype Db = Db {conn :: Connection}
