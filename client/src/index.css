@@ -45,101 +45,106 @@
 :root {
   /* Biome Premium Warm Theme */
   /* Primary: Warm Amber/Yellow */
-  --primary: #F59E0B;
-  --primary-foreground: #FFFFFF;
-  
+  --primary: #f59e0b;
+  --primary-foreground: #ffffff;
+
   /* Secondary: Orange Accent */
-  --secondary: #FF8C42;
-  --secondary-foreground: #FFFFFF;
-  
+  --secondary: #ff8c42;
+  --secondary-foreground: #ffffff;
+
   /* Accent: Warm Cream */
-  --accent: #FCD34D;
-  --accent-foreground: #1F2937;
-  
+  --accent: #fcd34d;
+  --accent-foreground: #1f2937;
+
   /* Sidebar colors */
-  --sidebar-primary: #F59E0B;
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #FCD34D;
-  --sidebar-accent-foreground: #1F2937;
-  
+  --sidebar-primary: #f59e0b;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #fcd34d;
+  --sidebar-accent-foreground: #1f2937;
+
   /* Chart colors - warm gradient */
-  --chart-1: #F59E0B;
-  --chart-2: #FF8C42;
-  --chart-3: #FCD34D;
-  --chart-4: #FBBF24;
-  --chart-5: #F97316;
-  
+  --chart-1: #f59e0b;
+  --chart-2: #ff8c42;
+  --chart-3: #fcd34d;
+  --chart-4: #fbbf24;
+  --chart-5: #f97316;
+
   /* Spacing & Radius */
   --radius: 1rem;
-  
+
   /* Light Mode - Off-white surfaces */
-  --background: #FFF9F1;
-  --foreground: #1F2937;
-  --card: #FFFFFF;
-  --card-foreground: #1F2937;
-  --popover: #FFFFFF;
-  --popover-foreground: #1F2937;
-  --secondary: #FEF3C7;
-  --secondary-foreground: #1F2937;
-  --muted: #F3E8FF;
-  --muted-foreground: #6B7280;
-  --accent: #FCD34D;
-  --accent-foreground: #1F2937;
-  --destructive: #EF4444;
-  --destructive-foreground: #FFFFFF;
-  --border: #E5E7EB;
-  --input: #F9FAFB;
-  --ring: #F59E0B;
-  --sidebar: #FFFFFF;
-  --sidebar-foreground: #1F2937;
-  --sidebar-accent: #FEF3C7;
-  --sidebar-accent-foreground: #1F2937;
-  --sidebar-border: #E5E7EB;
-  --sidebar-ring: #F59E0B;
+  --background: #fff9f1;
+  --foreground: #1f2937;
+  --card: #ffffff;
+  --card-foreground: #1f2937;
+  --popover: #ffffff;
+  --popover-foreground: #1f2937;
+  --secondary: #fef3c7;
+  --secondary-foreground: #1f2937;
+  --muted: #f3e8ff;
+  --muted-foreground: #6b7280;
+  --accent: #fcd34d;
+  --accent-foreground: #1f2937;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #e5e7eb;
+  --input: #f9fafb;
+  --ring: #f59e0b;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #1f2937;
+  --sidebar-accent: #fef3c7;
+  --sidebar-accent-foreground: #1f2937;
+  --sidebar-border: #e5e7eb;
+  --sidebar-ring: #f59e0b;
 }
 
 .dark {
   /* Dark Mode */
-  --background: #0F172A;
-  --foreground: #F3F4F6;
-  --card: #1E293B;
-  --card-foreground: #F3F4F6;
-  --popover: #1E293B;
-  --popover-foreground: #F3F4F6;
+  --background: #0f172a;
+  --foreground: #f3f4f6;
+  --card: #1e293b;
+  --card-foreground: #f3f4f6;
+  --popover: #1e293b;
+  --popover-foreground: #f3f4f6;
   --secondary: #334155;
-  --secondary-foreground: #E2E8F0;
+  --secondary-foreground: #e2e8f0;
   --muted: #475569;
-  --muted-foreground: #CBD5E1;
-  --accent: #F59E0B;
-  --accent-foreground: #0F172A;
-  --destructive: #F87171;
-  --destructive-foreground: #0F172A;
+  --muted-foreground: #cbd5e1;
+  --accent: #f59e0b;
+  --accent-foreground: #0f172a;
+  --destructive: #f87171;
+  --destructive-foreground: #0f172a;
   --border: #334155;
-  --input: #1E293B;
-  --ring: #F59E0B;
-  --sidebar: #1E293B;
-  --sidebar-foreground: #F3F4F6;
+  --input: #1e293b;
+  --ring: #f59e0b;
+  --sidebar: #1e293b;
+  --sidebar-foreground: #f3f4f6;
   --sidebar-accent: #334155;
-  --sidebar-accent-foreground: #F59E0B;
+  --sidebar-accent-foreground: #f59e0b;
   --sidebar-border: #334155;
-  --sidebar-ring: #F59E0B;
+  --sidebar-ring: #f59e0b;
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
-  
+
   body {
     @apply bg-background text-foreground;
-    font-family: 'Inter', sans-serif;
+    font-family: "Inter", sans-serif;
   }
-  
-  h1, h2, h3, h4, h5, h6 {
-    font-family: 'Sora', sans-serif;
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: "Sora", sans-serif;
     font-weight: 700;
   }
-  
+
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]),
   [type="button"]:not(:disabled),

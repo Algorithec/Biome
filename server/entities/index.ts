@@ -1,4 +1,9 @@
-export type DomainType = "ecommerce" | "food" | "rides" | "travel" | "hospitality";
+export type DomainType =
+  | "ecommerce"
+  | "food"
+  | "rides"
+  | "travel"
+  | "hospitality";
 
 export type Money = {
   currency: "INR";
@@ -98,7 +103,12 @@ export type ClickEventEntity = {
   createdAt: string;
 };
 
-export type OrderStatus = "CREATED" | "PAYMENT_PENDING" | "CONFIRMED" | "CANCELLED" | "FAILED";
+export type OrderStatus =
+  | "CREATED"
+  | "PAYMENT_PENDING"
+  | "CONFIRMED"
+  | "CANCELLED"
+  | "FAILED";
 
 export type OrderEntity = {
   id: string;

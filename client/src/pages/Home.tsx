@@ -1,13 +1,18 @@
-import { motion } from 'framer-motion';
-import { ArrowRight, Zap, TrendingDown, Users, Award } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import Header from '@/components/shared/Header';
-import Footer from '@/components/shared/Footer';
-import DomainCard from '@/components/shared/DomainCard';
-import AISearchInput from '@/components/ai/AISearchInput';
-import AIRecommendationCard from '@/components/ai/AIRecommendationCard';
-import { DOMAINS, FEATURES, TESTIMONIALS, ECOMMERCE_PLATFORMS } from '@/constants';
-import { Link } from 'wouter';
+import { motion } from "framer-motion";
+import { ArrowRight, Zap, TrendingDown, Users, Award } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import Header from "@/components/shared/Header";
+import Footer from "@/components/shared/Footer";
+import DomainCard from "@/components/shared/DomainCard";
+import AISearchInput from "@/components/ai/AISearchInput";
+import AIRecommendationCard from "@/components/ai/AIRecommendationCard";
+import {
+  DOMAINS,
+  FEATURES,
+  TESTIMONIALS,
+  ECOMMERCE_PLATFORMS,
+} from "@/constants";
+import { Link } from "wouter";
 
 export default function Home() {
   const containerVariants = {
@@ -40,12 +45,12 @@ export default function Home() {
         <div className="absolute inset-0 overflow-hidden">
           <motion.div
             animate={{ rotate: 360 }}
-            transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
             className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-amber-200 to-orange-200 rounded-full opacity-20 blur-3xl"
           />
           <motion.div
             animate={{ rotate: -360 }}
-            transition={{ duration: 25, repeat: Infinity, ease: 'linear' }}
+            transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
             className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-yellow-200 to-amber-200 rounded-full opacity-20 blur-3xl"
           />
         </div>
@@ -81,7 +86,9 @@ export default function Home() {
               variants={itemVariants}
               className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto"
             >
-              Biome uses AI to search across all platforms, apply coupons automatically, predict price drops, and save you money on every purchase.
+              Biome uses AI to search across all platforms, apply coupons
+              automatically, predict price drops, and save you money on every
+              purchase.
             </motion.p>
 
             {/* CTA Buttons */}
@@ -108,7 +115,7 @@ export default function Home() {
             <motion.div variants={itemVariants} className="mb-12">
               <AISearchInput
                 placeholder="Try: 'Laptop under ₹70,000' or 'Biryani delivery'"
-                onSearch={(query) => console.log('Search:', query)}
+                onSearch={query => console.log("Search:", query)}
               />
             </motion.div>
 
@@ -118,13 +125,17 @@ export default function Home() {
               className="grid grid-cols-3 gap-4 md:gap-8 text-center"
             >
               {[
-                { number: '₹5Cr+', label: 'Saved by Users' },
-                { number: '500K+', label: 'Active Users' },
-                { number: '5', label: 'Domains Covered' },
+                { number: "₹5Cr+", label: "Saved by Users" },
+                { number: "500K+", label: "Active Users" },
+                { number: "5", label: "Domains Covered" },
               ].map((stat, i) => (
                 <div key={i}>
-                  <p className="text-2xl md:text-3xl font-bold text-amber-600">{stat.number}</p>
-                  <p className="text-xs md:text-sm text-muted-foreground">{stat.label}</p>
+                  <p className="text-2xl md:text-3xl font-bold text-amber-600">
+                    {stat.number}
+                  </p>
+                  <p className="text-xs md:text-sm text-muted-foreground">
+                    {stat.label}
+                  </p>
                 </div>
               ))}
             </motion.div>
@@ -278,7 +289,9 @@ export default function Home() {
                 className="flex items-center gap-2 px-6 py-3 rounded-lg bg-white border border-amber-100 hover:border-amber-300 hover:shadow-md transition-all"
               >
                 <span className="text-2xl">{platform.logo}</span>
-                <span className="font-semibold text-foreground">{platform.name}</span>
+                <span className="font-semibold text-foreground">
+                  {platform.name}
+                </span>
               </motion.div>
             ))}
           </div>
@@ -315,13 +328,19 @@ export default function Home() {
                 <div className="flex items-center gap-4 mb-4">
                   <div className="text-4xl">{testimonial.image}</div>
                   <div>
-                    <p className="font-semibold text-foreground">{testimonial.name}</p>
-                    <p className="text-sm text-muted-foreground">{testimonial.role}</p>
+                    <p className="font-semibold text-foreground">
+                      {testimonial.name}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {testimonial.role}
+                    </p>
                   </div>
                 </div>
                 <div className="flex gap-1 mb-4">
                   {[...Array(testimonial.rating)].map((_, i) => (
-                    <span key={i} className="text-lg">⭐</span>
+                    <span key={i} className="text-lg">
+                      ⭐
+                    </span>
                   ))}
                 </div>
                 <p className="text-foreground italic">"{testimonial.quote}"</p>

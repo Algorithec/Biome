@@ -15,7 +15,9 @@ router.post("/search", async (req: Request, res: Response) => {
     .safeParse(req.body);
 
   if (!parsed.success) {
-    res.status(400).json({ error: "INVALID_BODY", details: parsed.error.flatten() });
+    res
+      .status(400)
+      .json({ error: "INVALID_BODY", details: parsed.error.flatten() });
     return;
   }
 
@@ -23,15 +25,18 @@ router.post("/search", async (req: Request, res: Response) => {
   res.json(out);
 });
 
-router.get("/restaurants/:restaurantId/menu", async (req: Request, res: Response) => {
-  const restaurantId = req.params.restaurantId;
-  if (!restaurantId) {
-    res.status(400).json({ error: "MISSING_RESTAURANT_ID" });
-    return;
+router.get(
+  "/restaurants/:restaurantId/menu",
+  async (req: Request, res: Response) => {
+    const restaurantId = req.params.restaurantId;
+    if (!restaurantId) {
+      res.status(400).json({ error: "MISSING_RESTAURANT_ID" });
+      return;
+    }
+    const out = await foodService.getMenu(restaurantId);
+    res.json(out);
   }
-  const out = await foodService.getMenu(restaurantId);
-  res.json(out);
-});
+);
 
 router.post("/delivery-options", async (req: Request, res: Response) => {
   const parsed = z
@@ -42,7 +47,9 @@ router.post("/delivery-options", async (req: Request, res: Response) => {
     .safeParse(req.body);
 
   if (!parsed.success) {
-    res.status(400).json({ error: "INVALID_BODY", details: parsed.error.flatten() });
+    res
+      .status(400)
+      .json({ error: "INVALID_BODY", details: parsed.error.flatten() });
     return;
   }
 
@@ -51,4 +58,3 @@ router.post("/delivery-options", async (req: Request, res: Response) => {
 });
 
 export default router;
-

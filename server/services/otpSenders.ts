@@ -62,7 +62,9 @@ export class SendGridEmailSender implements EmailSender {
 }
 
 export class TwilioSmsSender implements SmsSender {
-  constructor(private config: { accountSid: string; authToken: string; from: string }) {}
+  constructor(
+    private config: { accountSid: string; authToken: string; from: string }
+  ) {}
 
   async send(input: SmsSenderInput) {
     const url = `https://api.twilio.com/2010-04-01/Accounts/${this.config.accountSid}/Messages.json`;
@@ -72,7 +74,9 @@ export class TwilioSmsSender implements SmsSender {
       Body: `Your Deepenk OTP is ${input.code}. It expires in 10 minutes.`,
     });
 
-    const auth = Buffer.from(`${this.config.accountSid}:${this.config.authToken}`).toString("base64");
+    const auth = Buffer.from(
+      `${this.config.accountSid}:${this.config.authToken}`
+    ).toString("base64");
     const resp = await fetch(url, {
       method: "POST",
       headers: {
@@ -112,5 +116,9 @@ export function isEmailSenderConfigured() {
 }
 
 export function isSmsSenderConfigured() {
-  return Boolean(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_FROM);
+  return Boolean(
+    process.env.TWILIO_ACCOUNT_SID &&
+    process.env.TWILIO_AUTH_TOKEN &&
+    process.env.TWILIO_FROM
+  );
 }

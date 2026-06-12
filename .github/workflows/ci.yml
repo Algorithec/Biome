@@ -1,0 +1,129 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ────────────────────────────────────────────────────────────────
+  # TypeScript: typecheck + test + build
+  # ────────────────────────────────────────────────────────────────
+  node:
+    name: Node.js – Type-check / Test / Build
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [20.x, 22.x]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Type-check (tsc --noEmit)
+        run: pnpm check
+
+      - name: Run unit tests (Vitest)
+        run: pnpm test --reporter=verbose --run
+        env:
+          NODE_ENV: test
+
+      - name: Build (Vite + esbuild)
+        run: pnpm build
+        env:
+          VITE_GOOGLE_MAPS_API_KEY: ${{ secrets.VITE_GOOGLE_MAPS_API_KEY || 'placeholder' }}
+          VITE_GOOGLE_MAP_ID: ${{ secrets.VITE_GOOGLE_MAP_ID || 'placeholder' }}
+
+      - name: Upload build artifact
+        if: matrix.node-version == '22.x'
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ github.sha }}
+          path: dist/
+          retention-days: 7
+
+  # ────────────────────────────────────────────────────────────────
+  # Haskell payments microservice
+  # ────────────────────────────────────────────────────────────────
+  haskell:
+    name: Haskell – Build / Test (payments-hs)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: payments-hs
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup GHC + Cabal (via ghcup)
+        uses: haskell-actions/setup@v2
+        with:
+          ghc-version: "9.6"
+          cabal-version: "3.10"
+
+      - name: Cache Cabal store and build dir
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cabal/store
+            payments-hs/dist-newstyle
+          key: cabal-${{ runner.os }}-ghc-9.6-${{ hashFiles('payments-hs/deepenk-payments.cabal') }}
+          restore-keys: |
+            cabal-${{ runner.os }}-ghc-9.6-
+
+      - name: Update Hackage index
+        run: cabal update
+
+      - name: Install dependencies only
+        run: cabal build --only-dependencies all
+
+      - name: Build (with -Wall -Werror)
+        run: cabal build all
+
+      - name: Run tests
+        run: cabal test all --test-show-details=direct
+
+  # ────────────────────────────────────────────────────────────────
+  # Code quality gate (runs in parallel)
+  # ────────────────────────────────────────────────────────────────
+  lint:
+    name: Lint & Format check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check formatting (Prettier)
+        run: pnpm prettier --check .

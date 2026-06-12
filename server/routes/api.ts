@@ -36,10 +36,19 @@ router.use("/payments", paymentsRouter);
 router.use("/orders", ordersRouter);
 
 router.get("/history", authRequired(), async (req: Request, res: Response) => {
-  const limit = z.coerce.number().int().min(1).max(100).optional().safeParse(req.query.limit);
+  const limit = z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(100)
+    .optional()
+    .safeParse(req.query.limit);
   const n = limit.success ? limit.data : 30;
   const userId = req.ctx!.userId!;
-  const [searches, clicks] = await Promise.all([searchRepo.listByUser(userId, n), clickRepo.listByUser(userId, n)]);
+  const [searches, clicks] = await Promise.all([
+    searchRepo.listByUser(userId, n),
+    clickRepo.listByUser(userId, n),
+  ]);
   res.json({ searches, clicks });
 });
 
@@ -48,7 +57,7 @@ router.post("/ecommerce/search", async (req: Request, res: Response) => {
   const result = await searchEngine.search({ query, domain: "ecommerce" });
   res.json({
     query,
-    results: result.items.map((i) => ({
+    results: result.items.map(i => ({
       id: i.id,
       name: i.name,
       price: i.finalPrice.amount,

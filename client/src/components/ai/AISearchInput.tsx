@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Search, Mic, Sparkles } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { Search, Mic, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface AISearchInputProps {
   onSearch?: (query: string) => void;
@@ -11,27 +11,27 @@ interface AISearchInputProps {
 }
 
 const SUGGESTIONS = [
-  'Laptop under ₹70,000 with RTX graphics',
-  'Biryani delivery under ₹300',
-  'Cab to airport at lowest price',
-  'Flight to Delhi next week',
-  'Hotel in Goa with beach view',
+  "Laptop under ₹70,000 with RTX graphics",
+  "Biryani delivery under ₹300",
+  "Cab to airport at lowest price",
+  "Flight to Delhi next week",
+  "Hotel in Goa with beach view",
 ];
 
 export default function AISearchInput({
   onSearch,
-  placeholder = 'What are you looking for?',
+  placeholder = "What are you looking for?",
   showVoice = true,
   showSuggestions = true,
 }: AISearchInputProps) {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [isFocused, setIsFocused] = useState(false);
   const [showSuggestionsList, setShowSuggestionsList] = useState(false);
 
   const handleSearch = () => {
     if (query.trim()) {
       onSearch?.(query);
-      setQuery('');
+      setQuery("");
     }
   };
 
@@ -53,8 +53,8 @@ export default function AISearchInput({
         <div
           className={`relative rounded-2xl transition-all duration-300 ${
             isFocused
-              ? 'ring-2 ring-amber-500 shadow-lg'
-              : 'shadow-md hover:shadow-lg'
+              ? "ring-2 ring-amber-500 shadow-lg"
+              : "shadow-md hover:shadow-lg"
           }`}
         >
           <div className="flex items-center gap-3 bg-white px-6 py-4 rounded-2xl">
@@ -70,13 +70,13 @@ export default function AISearchInput({
             <input
               type="text"
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={e => setQuery(e.target.value)}
               onFocus={() => {
                 setIsFocused(true);
                 setShowSuggestionsList(true);
               }}
               onBlur={() => setIsFocused(false)}
-              onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+              onKeyPress={e => e.key === "Enter" && handleSearch()}
               placeholder={placeholder}
               className="flex-1 bg-transparent outline-none text-foreground placeholder-muted-foreground text-lg font-medium"
             />
@@ -137,7 +137,8 @@ export default function AISearchInput({
 
         {/* Help Text */}
         <p className="text-center text-xs text-muted-foreground mt-3">
-          🤖 Powered by AI • Search across all platforms • Get instant recommendations
+          🤖 Powered by AI • Search across all platforms • Get instant
+          recommendations
         </p>
       </motion.div>
     </div>

@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Payments.Types
@@ -20,7 +21,6 @@ module Payments.Types
 where
 
 import Data.Aeson
-import Data.Aeson.Types (Parser)
 import Data.Text (Text)
 import GHC.Generics (Generic)
 
@@ -102,11 +102,11 @@ instance ToJSON PaymentIntent where
 
 data PaymentEvent = PaymentEvent
   { eventId :: Text,
-    orderId :: Text,
+    peOrderId :: Text,
     eventType :: Text,
     signatureOk :: Bool,
     payload :: Value,
-    createdAt :: Text
+    peCreatedAt :: Text
   }
   deriving (Eq, Show, Generic)
 
@@ -114,11 +114,11 @@ instance ToJSON PaymentEvent where
   toJSON e =
     object
       [ "eventId" .= eventId e,
-        "orderId" .= orderId e,
+        "orderId" .= peOrderId e,
         "eventType" .= eventType e,
         "signatureOk" .= signatureOk e,
         "payload" .= payload e,
-        "createdAt" .= createdAt e
+        "createdAt" .= peCreatedAt e
       ]
 
 data CreateIntentRes = CreateIntentRes
@@ -167,7 +167,7 @@ instance ToJSON CashfreeOrderMeta where
 data CashfreeCreateOrderReq = CashfreeCreateOrderReq
   { cfOrderAmount :: Double,
     cfOrderCurrency :: Text,
-    cfOrderId :: Text,
+    cfoOrderId :: Text,
     cfCustomerDetails :: CashfreeCustomer,
     cfOrderMeta :: CashfreeOrderMeta
   }
@@ -178,7 +178,7 @@ instance ToJSON CashfreeCreateOrderReq where
     object
       [ "order_amount" .= cfOrderAmount r,
         "order_currency" .= cfOrderCurrency r,
-        "order_id" .= cfOrderId r,
+        "order_id" .= cfoOrderId r,
         "customer_details" .= cfCustomerDetails r,
         "order_meta" .= cfOrderMeta r
       ]

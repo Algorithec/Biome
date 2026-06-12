@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Payments.Config
   ( Config (..),
@@ -68,4 +69,3 @@ requireEnvText k = do
   case v of
     Nothing -> fail ("Missing required env: " <> k)
     Just s -> pure (T.pack s)
-

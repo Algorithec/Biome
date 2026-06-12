@@ -1,42 +1,60 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowRight, Menu, Mic, Plus, Bell, House, CarFront, Pizza, User } from 'lucide-react';
-import { Link, useLocation } from 'wouter';
-import apiClient from '@/services/api';
-import type { BackendSearchResult } from '@/types';
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  ArrowRight,
+  Menu,
+  Mic,
+  Plus,
+  Bell,
+  House,
+  CarFront,
+  Pizza,
+  User,
+} from "lucide-react";
+import { Link, useLocation } from "wouter";
+import apiClient from "@/services/api";
+import type { BackendSearchResult } from "@/types";
 
-type ActivePage = 'home' | 'history' | 'food' | 'rides';
+type ActivePage = "home" | "history" | "food" | "rides";
 
-const RECENT_CHATS = ['Book a ride to airport', 'Order pizza near me', 'Best phone under 30k', 'Compare iPhone 15 prices'];
+const RECENT_CHATS = [
+  "Book a ride to airport",
+  "Order pizza near me",
+  "Best phone under 30k",
+  "Compare iPhone 15 prices",
+];
 
 function useIsDesktop() {
   const [isDesktop, setIsDesktop] = useState(false);
 
   useEffect(() => {
-    const mq = window.matchMedia('(min-width: 1024px)');
+    const mq = window.matchMedia("(min-width: 1024px)");
     const update = () => setIsDesktop(mq.matches);
     update();
-    mq.addEventListener('change', update);
-    return () => mq.removeEventListener('change', update);
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
   }, []);
 
   return isDesktop;
 }
 
-function useAutosizeTextarea(inputRef: React.MutableRefObject<HTMLTextAreaElement | null>, value: string) {
+function useAutosizeTextarea(
+  inputRef: React.MutableRefObject<HTMLTextAreaElement | null>,
+  value: string
+) {
   useEffect(() => {
     const input = inputRef.current;
     if (!input) return;
 
     const resize = () => {
       const maxHeight = 78;
-      input.style.height = '26px';
+      input.style.height = "26px";
       input.style.height = `${Math.min(input.scrollHeight, maxHeight)}px`;
       if (input.scrollHeight > maxHeight) input.scrollTop = input.scrollHeight;
     };
 
     resize();
-    window.addEventListener('resize', resize);
-    return () => window.removeEventListener('resize', resize);
+    window.addEventListener("resize", resize);
+    return () => window.removeEventListener("resize", resize);
   }, [inputRef, value]);
 
   useEffect(() => {
@@ -50,16 +68,16 @@ export default function SearchPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<BackendSearchResult | null>(null);
-  const [promptText, setPromptText] = useState('');
+  const [promptText, setPromptText] = useState("");
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
   const [location, setLocation] = useLocation();
 
   useAutosizeTextarea(inputRef, promptText);
 
   useEffect(() => {
-    const saved = window.localStorage.getItem('home_prompt_draft');
+    const saved = window.localStorage.getItem("home_prompt_draft");
     if (!saved) return;
-    window.localStorage.removeItem('home_prompt_draft');
+    window.localStorage.removeItem("home_prompt_draft");
     setPromptText(saved);
     window.requestAnimationFrame(() => inputRef.current?.focus());
   }, []);
@@ -70,11 +88,13 @@ export default function SearchPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const resp = await apiClient.post<BackendSearchResult>('/search', { query: q });
+      const resp = await apiClient.post<BackendSearchResult>("/search", {
+        query: q,
+      });
       setResult(resp.data);
     } catch (e) {
       setResult(null);
-      setError('Search failed. Try again.');
+      setError("Search failed. Try again.");
     } finally {
       setIsLoading(false);
     }
@@ -83,10 +103,10 @@ export default function SearchPage() {
   const recommendations = result?.ai.recommendations ?? [];
 
   const activePage: ActivePage = useMemo(() => {
-    if (location.startsWith('/history')) return 'history';
-    if (location.startsWith('/food')) return 'food';
-    if (location.startsWith('/rides')) return 'rides';
-    return 'home';
+    if (location.startsWith("/history")) return "history";
+    if (location.startsWith("/food")) return "food";
+    if (location.startsWith("/rides")) return "rides";
+    return "home";
   }, [location]);
 
   return (
@@ -95,11 +115,21 @@ export default function SearchPage() {
         <div className="phone-screen">
           <section className="screen home-screen">
             <header className="home-header">
-              <button aria-label="Open sidebar" className="home-menu-button home-menu-button-primary" type="button" onClick={() => setLocation('/home')}>
+              <button
+                aria-label="Open sidebar"
+                className="home-menu-button home-menu-button-primary"
+                type="button"
+                onClick={() => setLocation("/home")}
+              >
                 <Menu size={26} strokeWidth={2.1} />
               </button>
               <div className="home-header-right">
-                <button aria-label="Notifications" className="home-menu-button" type="button" onClick={() => setLocation('/history')}>
+                <button
+                  aria-label="Notifications"
+                  className="home-menu-button"
+                  type="button"
+                  onClick={() => setLocation("/history")}
+                >
                   <Bell size={24} strokeWidth={2.1} />
                 </button>
               </div>
@@ -115,59 +145,91 @@ export default function SearchPage() {
 
               <form
                 className="home-prompt-wrap"
-                onSubmit={(e) => {
+                onSubmit={e => {
                   e.preventDefault();
                   handleSearch(promptText);
                   inputRef.current?.focus();
                 }}
               >
                 <div className="home-prompt-card">
-                  <button className="home-prompt-icon" type="button" aria-label="Add" onClick={() => inputRef.current?.focus()}>
+                  <button
+                    className="home-prompt-icon"
+                    type="button"
+                    aria-label="Add"
+                    onClick={() => inputRef.current?.focus()}
+                  >
                     <Plus size={18} strokeWidth={2.4} />
                   </button>
                   <textarea
                     className="home-prompt-input"
                     ref={inputRef}
-                    onChange={(e) => setPromptText(e.target.value)}
+                    onChange={e => setPromptText(e.target.value)}
                     placeholder="Ask Deepenk"
                     rows={1}
                     value={promptText}
                   />
-                  <button className="home-prompt-icon" type="button" aria-label="Voice" onClick={() => inputRef.current?.focus()}>
+                  <button
+                    className="home-prompt-icon"
+                    type="button"
+                    aria-label="Voice"
+                    onClick={() => inputRef.current?.focus()}
+                  >
                     <Mic size={18} strokeWidth={2.4} />
                   </button>
-                  <button className="home-prompt-send" disabled={!promptText.trim() || isLoading} type="submit">
+                  <button
+                    className="home-prompt-send"
+                    disabled={!promptText.trim() || isLoading}
+                    type="submit"
+                  >
                     <ArrowRight size={22} strokeWidth={2.5} />
                   </button>
                 </div>
               </form>
 
-              {error ? <div className="mt-6 text-sm text-red-600">{error}</div> : null}
-              {isLoading ? <div className="mt-6 text-sm text-muted-foreground">Thinking…</div> : null}
+              {error ? (
+                <div className="mt-6 text-sm text-red-600">{error}</div>
+              ) : null}
+              {isLoading ? (
+                <div className="mt-6 text-sm text-muted-foreground">
+                  Thinking…
+                </div>
+              ) : null}
 
               {!isLoading && recommendations.length > 0 && (
                 <div className="mt-6 w-full max-w-[620px] text-left">
                   <div className="rounded-2xl border border-amber-100 bg-white/90 p-4 shadow-sm">
-                    <div className="text-sm font-semibold text-foreground">Best picks</div>
+                    <div className="text-sm font-semibold text-foreground">
+                      Best picks
+                    </div>
                     <div className="mt-3 space-y-2">
-                      {recommendations.slice(0, 5).map((rec) => (
+                      {recommendations.slice(0, 5).map(rec => (
                         <button
                           key={rec.item.id}
                           type="button"
                           className="w-full rounded-xl border border-amber-100 bg-white px-3 py-3 text-left hover:bg-amber-50 transition-colors"
-                          onClick={() => window.open(rec.item.itemUrl, '_blank')}
+                          onClick={() =>
+                            window.open(rec.item.itemUrl, "_blank")
+                          }
                         >
                           <div className="flex items-center justify-between gap-3">
                             <div className="min-w-0">
-                              <div className="truncate font-semibold text-foreground">{rec.item.name}</div>
-                              <div className="text-xs text-muted-foreground truncate">{rec.item.provider}</div>
+                              <div className="truncate font-semibold text-foreground">
+                                {rec.item.name}
+                              </div>
+                              <div className="text-xs text-muted-foreground truncate">
+                                {rec.item.provider}
+                              </div>
                             </div>
-                            <div className="flex-none font-bold text-foreground">₹{rec.item.finalPrice.amount.toLocaleString()}</div>
+                            <div className="flex-none font-bold text-foreground">
+                              ₹{rec.item.finalPrice.amount.toLocaleString()}
+                            </div>
                           </div>
                         </button>
                       ))}
                     </div>
-                    <div className="mt-3 text-xs text-muted-foreground">cache: {result?.cache.hit ? 'HIT' : 'MISS'}</div>
+                    <div className="mt-3 text-xs text-muted-foreground">
+                      cache: {result?.cache.hit ? "HIT" : "MISS"}
+                    </div>
                   </div>
                 </div>
               )}
@@ -175,22 +237,36 @@ export default function SearchPage() {
 
             <nav className="app-bottom-nav" aria-label="Bottom navigation">
               <div className="app-bottom-nav-inner">
-                <Link className={`app-bottom-nav-item ${activePage === 'home' ? 'app-bottom-nav-item-active' : ''}`} href="/home">
+                <Link
+                  className={`app-bottom-nav-item ${activePage === "home" ? "app-bottom-nav-item-active" : ""}`}
+                  href="/home"
+                >
                   <span className="app-bottom-nav-bubble">
                     <House size={22} strokeWidth={2.2} />
                   </span>
                 </Link>
-                <Link className={`app-bottom-nav-item ${activePage === 'rides' ? 'app-bottom-nav-item-active' : ''}`} href="/rides">
+                <Link
+                  className={`app-bottom-nav-item ${activePage === "rides" ? "app-bottom-nav-item-active" : ""}`}
+                  href="/rides"
+                >
                   <span className="app-bottom-nav-bubble">
                     <CarFront size={22} strokeWidth={2.2} />
                   </span>
                 </Link>
-                <Link className={`app-bottom-nav-item ${activePage === 'food' ? 'app-bottom-nav-item-active' : ''}`} href="/food">
+                <Link
+                  className={`app-bottom-nav-item ${activePage === "food" ? "app-bottom-nav-item-active" : ""}`}
+                  href="/food"
+                >
                   <span className="app-bottom-nav-bubble">
                     <Pizza size={22} strokeWidth={2.2} />
                   </span>
                 </Link>
-                <button className="app-bottom-nav-item" type="button" onClick={() => setLocation('/profile')} aria-label="Profile">
+                <button
+                  className="app-bottom-nav-item"
+                  type="button"
+                  onClick={() => setLocation("/profile")}
+                  aria-label="Profile"
+                >
                   <span className="app-bottom-nav-bubble">
                     <User size={22} strokeWidth={2.2} />
                   </span>

@@ -17,17 +17,20 @@ export default function AboutPage() {
   const highlights = [
     {
       title: "Transparent",
-      description: "Clear results, clear reasoning. See why a deal is recommended.",
+      description:
+        "Clear results, clear reasoning. See why a deal is recommended.",
       icon: Shield,
     },
     {
       title: "Intelligent",
-      description: "AI-assisted discovery across platforms with intent-aware search.",
+      description:
+        "AI-assisted discovery across platforms with intent-aware search.",
       icon: Sparkles,
     },
     {
       title: "User-First",
-      description: "Built to save time and money, without changing how you shop.",
+      description:
+        "Built to save time and money, without changing how you shop.",
       icon: Users,
     },
   ];
@@ -44,7 +47,12 @@ export default function AboutPage() {
           </div>
 
           <div className="container relative py-16 md:py-24">
-            <motion.div variants={container} initial="hidden" animate="visible" className="max-w-3xl">
+            <motion.div
+              variants={container}
+              initial="hidden"
+              animate="visible"
+              className="max-w-3xl"
+            >
               <motion.p
                 variants={item}
                 className="inline-flex items-center rounded-full bg-amber-100/70 px-4 py-2 text-sm font-semibold text-amber-900"
@@ -59,9 +67,13 @@ export default function AboutPage() {
                 A smarter way to find the best deal, every time.
               </motion.h1>
 
-              <motion.p variants={item} className="mt-6 text-lg md:text-xl text-muted-foreground leading-relaxed">
-                Biome helps you compare options across domains, apply offers, and make confident decisions with
-                AI-powered recommendations. Built for speed, clarity, and everyday savings.
+              <motion.p
+                variants={item}
+                className="mt-6 text-lg md:text-xl text-muted-foreground leading-relaxed"
+              >
+                Biome helps you compare options across domains, apply offers,
+                and make confident decisions with AI-powered recommendations.
+                Built for speed, clarity, and everyday savings.
               </motion.p>
             </motion.div>
           </div>
@@ -76,7 +88,7 @@ export default function AboutPage() {
               viewport={{ once: true, margin: "-10% 0px" }}
               className="grid grid-cols-1 lg:grid-cols-3 gap-6"
             >
-              {highlights.map((h) => {
+              {highlights.map(h => {
                 const Icon = h.icon;
                 return (
                   <motion.div
@@ -88,7 +100,9 @@ export default function AboutPage() {
                       <div className="rounded-xl bg-amber-100 p-3 text-amber-900">
                         <Icon className="h-5 w-5" />
                       </div>
-                      <h3 className="text-xl font-bold text-foreground">{h.title}</h3>
+                      <h3 className="text-xl font-bold text-foreground">
+                        {h.title}
+                      </h3>
                     </div>
                     <p className="mt-4 text-sm md:text-base text-muted-foreground leading-relaxed">
                       {h.description}
@@ -104,43 +118,66 @@ export default function AboutPage() {
           <div className="container">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
               <div className="rounded-2xl border border-amber-100 bg-white p-8 shadow-sm">
-                <h2 className="text-2xl md:text-3xl font-bold text-foreground">Our mission</h2>
+                <h2 className="text-2xl md:text-3xl font-bold text-foreground">
+                  Our mission
+                </h2>
                 <p className="mt-4 text-muted-foreground leading-relaxed">
-                  Make commerce decisions simple. Biome brings search, comparison, and deal intelligence into one place
-                  so you can focus on what matters—choosing the right option.
+                  Make commerce decisions simple. Biome brings search,
+                  comparison, and deal intelligence into one place so you can
+                  focus on what matters—choosing the right option.
                 </p>
                 <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="rounded-xl bg-amber-50 border border-amber-100 p-4">
-                    <p className="text-sm font-semibold text-foreground">Cross-platform results</p>
-                    <p className="mt-1 text-sm text-muted-foreground">Compare prices, ratings, and value signals.</p>
+                    <p className="text-sm font-semibold text-foreground">
+                      Cross-platform results
+                    </p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Compare prices, ratings, and value signals.
+                    </p>
                   </div>
                   <div className="rounded-xl bg-amber-50 border border-amber-100 p-4">
-                    <p className="text-sm font-semibold text-foreground">Explainable recommendations</p>
-                    <p className="mt-1 text-sm text-muted-foreground">Know why something is the best pick.</p>
+                    <p className="text-sm font-semibold text-foreground">
+                      Explainable recommendations
+                    </p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Know why something is the best pick.
+                    </p>
                   </div>
                 </div>
               </div>
 
               <div className="rounded-2xl border border-amber-100 bg-white p-8 shadow-sm">
-                <h2 className="text-2xl md:text-3xl font-bold text-foreground">What we build</h2>
+                <h2 className="text-2xl md:text-3xl font-bold text-foreground">
+                  What we build
+                </h2>
                 <div className="mt-6 space-y-4">
                   {[
                     {
                       title: "Deal discovery",
-                      description: "Search and compare across domains like e-commerce, food, rides, travel, and more.",
+                      description:
+                        "Search and compare across domains like e-commerce, food, rides, travel, and more.",
                     },
                     {
                       title: "Savings automation",
-                      description: "Surface relevant offers and stack savings signals to maximize value.",
+                      description:
+                        "Surface relevant offers and stack savings signals to maximize value.",
                     },
                     {
                       title: "Decision clarity",
-                      description: "Concise insights so you can buy faster with fewer tabs and less guesswork.",
+                      description:
+                        "Concise insights so you can buy faster with fewer tabs and less guesswork.",
                     },
-                  ].map((row) => (
-                    <div key={row.title} className="rounded-xl border border-amber-100 bg-amber-50/40 p-5">
-                      <p className="font-semibold text-foreground">{row.title}</p>
-                      <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{row.description}</p>
+                  ].map(row => (
+                    <div
+                      key={row.title}
+                      className="rounded-xl border border-amber-100 bg-amber-50/40 p-5"
+                    >
+                      <p className="font-semibold text-foreground">
+                        {row.title}
+                      </p>
+                      <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
+                        {row.description}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -154,4 +191,3 @@ export default function AboutPage() {
     </div>
   );
 }
-

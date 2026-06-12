@@ -14,10 +14,12 @@ import qualified Data.ByteString.Lazy as LBS
 import Data.Maybe (fromMaybe)
 import Data.Text (Text)
 import qualified Data.Text as T
+import qualified Data.Text.Lazy as LT
 import qualified Data.CaseInsensitive as CI
 import Network.HTTP.Types (status200, status400, status401, status404)
 import Network.Wai (requestHeaders)
-import Web.Scotty.Trans
+import Web.Scotty.Trans hiding (status)
+import qualified Web.Scotty.Trans as S
 import Payments.Cashfree
 import Payments.Config
 import Payments.DB
@@ -36,7 +38,7 @@ runServer :: Config -> Db -> IO ()
 runServer cfg db =
   scottyT (port cfg) (\m -> runReaderT m (Env cfg db)) routes
 
-routes :: ScottyT Text AppM ()
+routes :: ScottyT LT.Text AppM ()
 routes = do
   get "/health" $ do
     json (object ["ok" .= True])
@@ -54,7 +56,7 @@ routes = do
         cfg = envCfg env
     case (eitherDecode reqBody :: Either String CreateIntentReq) of
       Left _ -> do
-        status status400
+        S.status status400
         json (object ["error" .= ("INVALID_BODY" :: Text)])
       Right input -> do
         now <- liftIO nowIso
@@ -66,7 +68,7 @@ routes = do
             found <- liftIO (getIntent db iid)
             case found of
               Nothing -> do
-                status status404
+                S.status status404
                 json (object ["error" .= ("IDEMPOTENCY_RECORD_BROKEN" :: Text)])
               Just intentV -> json (mkCreateRes cfg intentV)
           Nothing -> do
@@ -76,7 +78,7 @@ routes = do
                   CashfreeCreateOrderReq
                     { cfOrderAmount = amount (money input),
                       cfOrderCurrency = currency (money input),
-                      cfOrderId = ordId,
+                      cfoOrderId = ordId,
                       cfCustomerDetails =
                         CashfreeCustomer
                           { cfCustomerId = customerId (customer input),
@@ -114,7 +116,7 @@ routes = do
     found <- liftIO $ getIntent (envDb env) iid
     case found of
       Nothing -> do
-        status status404
+        S.status status404
         json (object ["error" .= ("NOT_FOUND" :: Text)])
       Just intentV -> json intentV
 
@@ -125,7 +127,7 @@ routes = do
     env <- lift ask
     case userIdH of
       Nothing -> do
-        status status401
+        S.status status401
         json (object ["error" .= ("UNAUTHORIZED" :: Text)])
       Just uid -> do
         orderIdV <- (Just <$> param "orderId") `rescue` (\_ -> pure Nothing)
@@ -147,15 +149,15 @@ routes = do
           case decoded of
             Right evt -> (whOrderId (whOrder evt), whType evt)
             Left _ -> ("unknown" :: Text, "unknown" :: Text)
-        eventId = "evt_" <> ordId <> "_" <> now
-    liftIO $ insertWebhookEvent db eventId ordId evtType sigOk (decodeJson rawBody) now
+        evtId = "evt_" <> ordId <> "_" <> now
+    liftIO $ insertWebhookEvent db evtId ordId evtType sigOk (decodeJson rawBody) now
     if not sigOk
       then do
-        status status401
+        S.status status401
         json (object ["error" .= ("INVALID_SIGNATURE" :: Text)])
       else case decoded of
         Left _ -> do
-          status status400
+          S.status status400
           json (object ["error" .= ("INVALID_JSON" :: Text)])
         Right evt -> do
           let paymentStatus = whPaymentStatus (whPayment evt)
@@ -166,7 +168,7 @@ routes = do
                   "USER_DROPPED" -> Cancelled
                   _ -> Active
           liftIO $ updateIntentStatus db (whOrderId (whOrder evt)) intentStatus now
-          status status200
+          S.status status200
           json (object ["ok" .= True])
 
 mkCreateRes :: Config -> PaymentIntent -> CreateIntentRes

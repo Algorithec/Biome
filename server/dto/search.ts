@@ -1,6 +1,12 @@
 import { z } from "zod";
 
-export const DomainSchema = z.enum(["ecommerce", "food", "rides", "travel", "hospitality"]);
+export const DomainSchema = z.enum([
+  "ecommerce",
+  "food",
+  "rides",
+  "travel",
+  "hospitality",
+]);
 
 export const SearchRequestSchema = z.object({
   query: z.string().trim().min(1),
@@ -27,4 +33,3 @@ export const SuggestionsQuerySchema = z.object({
 });
 
 export type SuggestionsQueryDto = z.infer<typeof SuggestionsQuerySchema>;
-

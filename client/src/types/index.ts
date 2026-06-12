@@ -1,5 +1,10 @@
 /* Domain Types */
-export type DomainType = 'ecommerce' | 'food' | 'rides' | 'travel' | 'hospitality';
+export type DomainType =
+  | "ecommerce"
+  | "food"
+  | "rides"
+  | "travel"
+  | "hospitality";
 
 /* Product/Item Types */
 export interface Product {
@@ -32,7 +37,7 @@ export interface Restaurant {
 
 export interface Ride {
   id: string;
-  type: 'bike' | 'auto' | 'cab' | 'premium';
+  type: "bike" | "auto" | "cab" | "premium";
   fare: number;
   eta: number;
   driverRating: number;
@@ -122,7 +127,7 @@ export interface SearchResult {
 }
 
 export type BackendMoney = {
-  currency: 'INR';
+  currency: "INR";
   amount: number;
 };
 
@@ -139,7 +144,7 @@ export type BackendNormalizedItem = {
   finalPrice: BackendMoney;
   deliveryEtaMinutes?: number;
   offersApplied?: Array<{
-    type: 'coupon' | 'bank' | 'wallet' | 'platform' | 'other';
+    type: "coupon" | "bank" | "wallet" | "platform" | "other";
     label: string;
     value?: BackendMoney;
     code?: string;
@@ -189,7 +194,7 @@ export interface User {
 export interface UserPreferences {
   preferredDomains: DomainType[];
   priceRange: { min: number; max: number };
-  deliveryPreference: 'fastest' | 'cheapest' | 'balanced';
+  deliveryPreference: "fastest" | "cheapest" | "balanced";
   paymentMethods: string[];
   notificationsEnabled: boolean;
 }
@@ -207,7 +212,7 @@ export interface Purchase {
 /* Notification Types */
 export interface Notification {
   id: string;
-  type: 'deal' | 'price_drop' | 'recommendation' | 'cashback' | 'order';
+  type: "deal" | "price_drop" | "recommendation" | "cashback" | "order";
   title: string;
   message: string;
   timestamp: Date;

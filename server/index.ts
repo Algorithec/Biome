@@ -23,10 +23,13 @@ async function startServer() {
 
   app.use(
     cors({
-      origin: (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => {
+      origin: (
+        origin: string | undefined,
+        cb: (err: Error | null, allow?: boolean) => void
+      ) => {
         const allowed = (process.env.CORS_ORIGIN || "http://localhost:3001")
           .split(",")
-          .map((s) => s.trim())
+          .map(s => s.trim())
           .filter(Boolean);
         if (!origin) return cb(null, true);
         if (allowed.includes(origin)) return cb(null, true);
@@ -48,18 +51,29 @@ async function startServer() {
   app.use("/auth", authRouter);
   app.use("/api", apiRouter);
 
-  app.use((err: unknown, req: Request, res: Response, _next: (err?: unknown) => void) => {
-    const message = err instanceof Error ? err.message : "INTERNAL_ERROR";
-    const statusCode =
-      message === "CORS_NOT_ALLOWED" ? 403 : message.startsWith("INVALID_") ? 400 : 500;
+  app.use(
+    (
+      err: unknown,
+      req: Request,
+      res: Response,
+      _next: (err?: unknown) => void
+    ) => {
+      const message = err instanceof Error ? err.message : "INTERNAL_ERROR";
+      const statusCode =
+        message === "CORS_NOT_ALLOWED"
+          ? 403
+          : message.startsWith("INVALID_")
+            ? 400
+            : 500;
 
-    if (req.path.startsWith("/api") || req.path.startsWith("/auth")) {
-      res.status(statusCode).json({ error: message });
-      return;
+      if (req.path.startsWith("/api") || req.path.startsWith("/auth")) {
+        res.status(statusCode).json({ error: message });
+        return;
+      }
+
+      res.status(statusCode).type("text/plain").send("Error");
     }
-
-    res.status(statusCode).type("text/plain").send("Error");
-  });
+  );
 
   // Serve static files from dist/public in production
   const staticPath =
@@ -79,13 +93,17 @@ async function startServer() {
   server.on("error", (err: any) => {
     if (err && err.code === "EADDRINUSE") {
       console.error(`Server port ${port} is already in use.`);
-      console.error(`Stop the existing process, or run: PORT=3002 pnpm dev:server`);
+      console.error(
+        `Stop the existing process, or run: PORT=3002 pnpm dev:server`
+      );
       process.exit(1);
     }
     throw err;
   });
 
-  server.listen(port, () => console.log(`Server running on http://localhost:${port}/`));
+  server.listen(port, () =>
+    console.log(`Server running on http://localhost:${port}/`)
+  );
 }
 
 startServer().catch(console.error);

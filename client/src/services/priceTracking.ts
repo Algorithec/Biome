@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from "axios";
 
 /**
  * Price Tracking Service for Biome
@@ -34,8 +34,8 @@ export interface NotificationPreference {
 }
 
 class PriceTrackingService {
-  private apiUrl = import.meta.env.VITE_API_URL || '/api';
-  private wsUrl = import.meta.env.VITE_WS_URL || 'wss://ws.biome.local';
+  private apiUrl = import.meta.env.VITE_API_URL || "/api";
+  private wsUrl = import.meta.env.VITE_WS_URL || "wss://ws.biome.local";
   private ws: WebSocket | null = null;
   private priceAlerts: Map<string, PriceAlert> = new Map();
   private notificationListeners: Set<(alert: PriceAlert) => void> = new Set();
@@ -49,21 +49,21 @@ class PriceTrackingService {
         this.ws = new WebSocket(this.wsUrl);
 
         this.ws.onopen = () => {
-          console.log('Price tracking WebSocket connected');
+          console.log("Price tracking WebSocket connected");
           resolve();
         };
 
-        this.ws.onmessage = (event) => {
+        this.ws.onmessage = event => {
           this.handlePriceUpdate(JSON.parse(event.data));
         };
 
-        this.ws.onerror = (error) => {
-          console.error('WebSocket error:', error);
+        this.ws.onerror = error => {
+          console.error("WebSocket error:", error);
           reject(error);
         };
 
         this.ws.onclose = () => {
-          console.log('Price tracking WebSocket disconnected');
+          console.log("Price tracking WebSocket disconnected");
           // Attempt to reconnect after 5 seconds
           setTimeout(() => this.initializeWebSocket(), 5000);
         };
@@ -98,7 +98,7 @@ class PriceTrackingService {
       this.priceAlerts.set(alert.id, alert);
       return alert;
     } catch (error) {
-      console.error('Failed to create price alert:', error);
+      console.error("Failed to create price alert:", error);
       throw error;
     }
   }
@@ -111,7 +111,7 @@ class PriceTrackingService {
       const response = await axios.get(`${this.apiUrl}/price-alerts`);
       return response.data;
     } catch (error) {
-      console.error('Failed to fetch price alerts:', error);
+      console.error("Failed to fetch price alerts:", error);
       throw error;
     }
   }
@@ -124,7 +124,7 @@ class PriceTrackingService {
       await axios.delete(`${this.apiUrl}/price-alerts/${alertId}`);
       this.priceAlerts.delete(alertId);
     } catch (error) {
-      console.error('Failed to delete price alert:', error);
+      console.error("Failed to delete price alert:", error);
       throw error;
     }
   }
@@ -132,14 +132,18 @@ class PriceTrackingService {
   /**
    * Get price history for an item
    */
-  async getPriceHistory(itemId: string, platform: string, days: number = 30): Promise<PriceHistory> {
+  async getPriceHistory(
+    itemId: string,
+    platform: string,
+    days: number = 30
+  ): Promise<PriceHistory> {
     try {
       const response = await axios.get(`${this.apiUrl}/price-history`, {
         params: { itemId, platform, days },
       });
       return response.data;
     } catch (error) {
-      console.error('Failed to fetch price history:', error);
+      console.error("Failed to fetch price history:", error);
       throw error;
     }
   }
@@ -167,7 +171,7 @@ class PriceTrackingService {
       alert.currentPrice = newPrice;
 
       // Notify all listeners
-      this.notificationListeners.forEach((listener) => {
+      this.notificationListeners.forEach(listener => {
         listener(alert);
       });
 
@@ -182,10 +186,10 @@ class PriceTrackingService {
    * Show browser notification
    */
   private showNotification(alert: PriceAlert): void {
-    if ('Notification' in window && Notification.permission === 'granted') {
+    if ("Notification" in window && Notification.permission === "granted") {
       new Notification(`Price Drop Alert! 🎉`, {
         body: `${alert.itemName} is now ₹${alert.currentPrice} on ${alert.platform}. Target: ₹${alert.targetPrice}`,
-        icon: '📉',
+        icon: "📉",
       });
     }
   }
@@ -194,14 +198,14 @@ class PriceTrackingService {
    * Request notification permission
    */
   async requestNotificationPermission(): Promise<boolean> {
-    if ('Notification' in window) {
-      if (Notification.permission === 'granted') {
+    if ("Notification" in window) {
+      if (Notification.permission === "granted") {
         return true;
       }
 
-      if (Notification.permission !== 'denied') {
+      if (Notification.permission !== "denied") {
         const permission = await Notification.requestPermission();
-        return permission === 'granted';
+        return permission === "granted";
       }
     }
 
@@ -211,11 +215,13 @@ class PriceTrackingService {
   /**
    * Update notification preferences
    */
-  async updateNotificationPreferences(preferences: NotificationPreference): Promise<void> {
+  async updateNotificationPreferences(
+    preferences: NotificationPreference
+  ): Promise<void> {
     try {
       await axios.put(`${this.apiUrl}/notification-preferences`, preferences);
     } catch (error) {
-      console.error('Failed to update notification preferences:', error);
+      console.error("Failed to update notification preferences:", error);
       throw error;
     }
   }
@@ -225,10 +231,12 @@ class PriceTrackingService {
    */
   async getNotificationPreferences(): Promise<NotificationPreference> {
     try {
-      const response = await axios.get(`${this.apiUrl}/notification-preferences`);
+      const response = await axios.get(
+        `${this.apiUrl}/notification-preferences`
+      );
       return response.data;
     } catch (error) {
-      console.error('Failed to fetch notification preferences:', error);
+      console.error("Failed to fetch notification preferences:", error);
       throw error;
     }
   }

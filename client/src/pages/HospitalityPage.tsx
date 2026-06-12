@@ -1,44 +1,44 @@
-import { motion } from 'framer-motion';
-import { MapPin, Star, Wifi, Coffee } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import Header from '@/components/shared/Header';
-import Footer from '@/components/shared/Footer';
-import AISearchInput from '@/components/ai/AISearchInput';
+import { motion } from "framer-motion";
+import { MapPin, Star, Wifi, Coffee } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import Header from "@/components/shared/Header";
+import Footer from "@/components/shared/Footer";
+import AISearchInput from "@/components/ai/AISearchInput";
 
 export default function HospitalityPage() {
   const mockHotels = [
     {
-      id: '1',
-      name: 'Beachfront Resort',
-      location: 'Goa',
+      id: "1",
+      name: "Beachfront Resort",
+      location: "Goa",
       price: 2499,
       originalPrice: 4999,
       rating: 4.7,
       reviews: 1203,
-      image: '🏨',
-      amenities: ['WiFi', 'Pool', 'Breakfast'],
+      image: "🏨",
+      amenities: ["WiFi", "Pool", "Breakfast"],
     },
     {
-      id: '2',
-      name: 'Mountain Retreat',
-      location: 'Himachal Pradesh',
+      id: "2",
+      name: "Mountain Retreat",
+      location: "Himachal Pradesh",
       price: 1999,
       originalPrice: 3499,
       rating: 4.8,
       reviews: 892,
-      image: '🏔️',
-      amenities: ['WiFi', 'Parking', 'Restaurant'],
+      image: "🏔️",
+      amenities: ["WiFi", "Parking", "Restaurant"],
     },
     {
-      id: '3',
-      name: 'City Center Hotel',
-      location: 'Mumbai',
+      id: "3",
+      name: "City Center Hotel",
+      location: "Mumbai",
       price: 3499,
       originalPrice: 5999,
       rating: 4.5,
       reviews: 2341,
-      image: '🏙️',
-      amenities: ['WiFi', 'Gym', 'Spa'],
+      image: "🏙️",
+      amenities: ["WiFi", "Gym", "Spa"],
     },
   ];
 
@@ -67,7 +67,7 @@ export default function HospitalityPage() {
             <div className="max-w-xl">
               <AISearchInput
                 placeholder="Where do you want to stay?"
-                onSearch={(q) => console.log('Search:', q)}
+                onSearch={q => console.log("Search:", q)}
               />
             </div>
           </motion.div>
@@ -80,19 +80,19 @@ export default function HospitalityPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               {
-                icon: '⚡',
-                title: 'Instant Comparison',
-                description: 'Compare prices across all hotel platforms',
+                icon: "⚡",
+                title: "Instant Comparison",
+                description: "Compare prices across all hotel platforms",
               },
               {
-                icon: '⭐',
-                title: 'Guest Reviews',
-                description: 'Read summarized reviews from real guests',
+                icon: "⭐",
+                title: "Guest Reviews",
+                description: "Read summarized reviews from real guests",
               },
               {
-                icon: '🎟️',
-                title: 'Best Deals',
-                description: 'Get the lowest prices with automatic coupons',
+                icon: "🎟️",
+                title: "Best Deals",
+                description: "Get the lowest prices with automatic coupons",
               },
             ].map((feature, idx) => (
               <motion.div
@@ -105,7 +105,9 @@ export default function HospitalityPage() {
               >
                 <div className="text-4xl mb-4">{feature.icon}</div>
                 <h3 className="font-bold mb-2">{feature.title}</h3>
-                <p className="text-sm text-muted-foreground">{feature.description}</p>
+                <p className="text-sm text-muted-foreground">
+                  {feature.description}
+                </p>
               </motion.div>
             ))}
           </div>

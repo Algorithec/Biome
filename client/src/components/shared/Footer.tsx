@@ -1,44 +1,44 @@
-import { motion } from 'framer-motion';
-import { Link } from 'wouter';
+import { motion } from "framer-motion";
+import { Link } from "wouter";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   const footerSections = [
     {
-      title: 'Product',
+      title: "Product",
       links: [
-        { label: 'Features', href: '#' },
-        { label: 'Pricing', href: '#' },
-        { label: 'Security', href: '#' },
-        { label: 'Roadmap', href: '#' },
+        { label: "Features", href: "#" },
+        { label: "Pricing", href: "#" },
+        { label: "Security", href: "#" },
+        { label: "Roadmap", href: "#" },
       ],
     },
     {
-      title: 'Company',
+      title: "Company",
       links: [
-        { label: 'About', href: '/about' },
-        { label: 'Blog', href: '#' },
-        { label: 'Careers', href: '#' },
-        { label: 'Contact', href: '/contact' },
+        { label: "About", href: "/about" },
+        { label: "Blog", href: "#" },
+        { label: "Careers", href: "#" },
+        { label: "Contact", href: "/contact" },
       ],
     },
     {
-      title: 'Legal',
+      title: "Legal",
       links: [
-        { label: 'Privacy', href: '#' },
-        { label: 'Terms', href: '#' },
-        { label: 'Cookies', href: '#' },
-        { label: 'Compliance', href: '#' },
+        { label: "Privacy", href: "#" },
+        { label: "Terms", href: "#" },
+        { label: "Cookies", href: "#" },
+        { label: "Compliance", href: "#" },
       ],
     },
     {
-      title: 'Social',
+      title: "Social",
       links: [
-        { label: 'Twitter', href: '#' },
-        { label: 'LinkedIn', href: '#' },
-        { label: 'GitHub', href: '#' },
-        { label: 'Discord', href: '#' },
+        { label: "Twitter", href: "#" },
+        { label: "LinkedIn", href: "#" },
+        { label: "GitHub", href: "#" },
+        { label: "Discord", href: "#" },
       ],
     },
   ];
@@ -65,7 +65,7 @@ export default function Footer() {
               AI-powered deal aggregation across all your favorite platforms.
             </p>
             <div className="flex gap-3">
-              {['🐦', '💼', '🔗', '💬'].map((icon, i) => (
+              {["🐦", "💼", "🔗", "💬"].map((icon, i) => (
                 <motion.button
                   key={i}
                   whileHover={{ scale: 1.2 }}
@@ -87,9 +87,11 @@ export default function Footer() {
               viewport={{ once: true }}
               transition={{ delay: idx * 0.1 }}
             >
-              <h4 className="font-semibold text-foreground mb-4">{section.title}</h4>
+              <h4 className="font-semibold text-foreground mb-4">
+                {section.title}
+              </h4>
               <ul className="space-y-2">
-                {section.links.map((link) => (
+                {section.links.map(link => (
                   <li key={link.label}>
                     <a
                       href={link.href}
@@ -110,7 +112,8 @@ export default function Footer() {
         {/* Bottom Section */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-sm text-muted-foreground">
-            © {currentYear} Biome. All rights reserved. | Made with ❤️ by Algorithec
+            © {currentYear} Biome. All rights reserved. | Made with ❤️ by
+            Algorithec
           </p>
           <div className="flex gap-4">
             <button className="text-sm text-muted-foreground hover:text-amber-600 transition-colors">
