@@ -76,7 +76,7 @@ routes = do
                   CashfreeCreateOrderReq
                     { cfOrderAmount = amount (money input),
                       cfOrderCurrency = currency (money input),
-                      cfOrderId = ordId,
+                      cfoOrderId = ordId,
                       cfCustomerDetails =
                         CashfreeCustomer
                           { cfCustomerId = customerId (customer input),
@@ -147,8 +147,8 @@ routes = do
           case decoded of
             Right evt -> (whOrderId (whOrder evt), whType evt)
             Left _ -> ("unknown" :: Text, "unknown" :: Text)
-        eventId = "evt_" <> ordId <> "_" <> now
-    liftIO $ insertWebhookEvent db eventId ordId evtType sigOk (decodeJson rawBody) now
+        evtId = "evt_" <> ordId <> "_" <> now
+    liftIO $ insertWebhookEvent db evtId ordId evtType sigOk (decodeJson rawBody) now
     if not sigOk
       then do
         status status401

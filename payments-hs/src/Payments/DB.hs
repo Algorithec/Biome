@@ -17,8 +17,8 @@ where
 
 import Control.Exception (bracket)
 import Data.Aeson (Value (..), decodeStrict, encode)
-import qualified Data.ByteString.Lazy as LBS
 import qualified Data.ByteString as BS
+import qualified Data.ByteString.Lazy as LBS
 import Data.Text (Text)
 import qualified Data.Text.Encoding as TE
 import Database.SQLite.Simple
@@ -104,7 +104,7 @@ updateIntentStatus db orderIdV newStatus updatedAtIso = do
     "UPDATE payment_intents SET status = ?, updated_at = ? WHERE order_id = ?"
     (statusText newStatus, updatedAtIso, orderIdV)
 
-insertWebhookEvent :: Db -> Text -> Text -> Bool -> Value -> Text -> IO ()
+insertWebhookEvent :: Db -> Text -> Text -> Text -> Bool -> Value -> Text -> IO ()
 insertWebhookEvent db eventId orderIdV eventType sigOk payload createdAtIso = do
   let sigVal :: Int
       sigVal = if sigOk then 1 else 0
@@ -162,11 +162,11 @@ fromRowEvent (PaymentEventRow eid oid et sig payloadStr ca) =
         Nothing -> String payloadStr
    in PaymentEvent
         { eventId = eid,
-          orderId = oid,
+          peOrderId = oid,
           eventType = et,
           signatureOk = sigOk,
           payload = payloadV,
-          createdAt = ca
+          peCreatedAt = ca
         }
 
 parseStatus :: Text -> IntentStatus

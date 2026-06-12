@@ -7,11 +7,12 @@ module Payments.Cashfree
 where
 
 import Data.Aeson (Value, eitherDecode, encode, object, (.=))
-import qualified Data.ByteString.Char8 as BS
+import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as LBS
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
+import qualified Data.CaseInsensitive as CI
 import Network.HTTP.Client
 import Network.HTTP.Client.TLS (tlsManagerSettings)
 import Network.HTTP.Types (hAccept, hContentType, methodGet, methodPost, statusCode)
@@ -32,7 +33,7 @@ createOrder cfg idempotencyKey payload = do
                 <> [ (hAccept, "application/json"),
                      (hContentType, "application/json")
                    ]
-                <> maybe [] (\k -> [("x-idempotency-key", TE.encodeUtf8 k)]) idempotencyKey
+                <> maybe [] (\k -> [(CI.mk "x-idempotency-key", TE.encodeUtf8 k)]) idempotencyKey
           }
   resp <- httpLbs req manager
   if statusCode (responseStatus resp) `elem` [200, 201]
@@ -63,10 +64,9 @@ fetchOrder cfg orderId = do
             ]
         )
 
-baseHeaders :: Config -> [(BS.ByteString, BS.ByteString)]
+baseHeaders :: Config -> RequestHeaders
 baseHeaders cfg =
-  [ ("x-client-id", TE.encodeUtf8 (cashfreeClientId cfg)),
-    ("x-client-secret", TE.encodeUtf8 (cashfreeClientSecret cfg)),
-    ("x-api-version", TE.encodeUtf8 (cashfreeApiVersion cfg))
+  [ (CI.mk "x-client-id", TE.encodeUtf8 (cashfreeClientId cfg)),
+    (CI.mk "x-client-secret", TE.encodeUtf8 (cashfreeClientSecret cfg)),
+    (CI.mk "x-api-version", TE.encodeUtf8 (cashfreeApiVersion cfg))
   ]
-
