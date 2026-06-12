@@ -7,6 +7,15 @@ build-type: Simple
 executable deepenk-payments
   hs-source-dirs: app, src
   main-is: Main.hs
+  other-modules:
+      Payments.Cashfree
+    , Payments.Config
+    , Payments.DB
+    , Payments.Reconcile
+    , Payments.Server
+    , Payments.Types
+    , Payments.Util
+    , Payments.Webhook
   default-language: GHC2021
   ghc-options: -Wall -Werror
   build-depends:
@@ -30,4 +39,3 @@ executable deepenk-payments
     , wai ^>=3.2
     , warp ^>=3.3
     , base64-bytestring ^>=1.2
-
