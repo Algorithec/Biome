@@ -121,5 +121,4 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Check formatting (Prettier)
-        run: |
-          pnpm prettier --check . || (pnpm prettier --write server/repositories/mongo.ts server/services/otpSenders.ts && git diff && exit 1)
+        run: pnpm prettier --check .
