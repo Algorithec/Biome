@@ -27,6 +27,7 @@ executable deepenk-payments
     , http-client ^>=0.7
     , http-client-tls ^>=0.3
     , http-types ^>=0.12
+    , memory ^>=0.18
     , mtl ^>=2.3
     , random ^>=1.2
     , scotty ^>=0.12

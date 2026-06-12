@@ -7,7 +7,6 @@ where
 
 import Crypto.Hash.Algorithms (SHA256)
 import Crypto.MAC.HMAC (HMAC, hmac, hmacGetDigest)
-import Crypto.Util (constTimeEq)
 import Data.ByteArray (convert)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Base64 as B64
@@ -25,7 +24,7 @@ verifyCashfreeSignature rawBody headers secret =
           digest :: HMAC SHA256
           digest = hmac key signStr
           computed = B64.encode (convert (hmacGetDigest digest) :: BS.ByteString)
-       in constTimeEq computed sig
+       in computed == sig
     _ -> False
   where
     lookupHeader :: CI.CI BS.ByteString -> Maybe BS.ByteString
