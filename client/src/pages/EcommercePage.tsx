@@ -1,15 +1,20 @@
-import { motion } from 'framer-motion';
-import { Star, ShoppingCart, TrendingUp, BarChart3 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import Header from '@/components/shared/Header';
-import Footer from '@/components/shared/Footer';
-import AISearchInput from '@/components/ai/AISearchInput';
-import apiClient, { ecommerceAPI, ordersAPI } from '@/services/api';
-import type { BackendSearchResult } from '@/types';
-import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { toast } from 'sonner';
-// moving the hardcoded files - > to fetch the source from the backend 
+import { motion } from "framer-motion";
+import { Star, ShoppingCart, TrendingUp, BarChart3 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import Header from "@/components/shared/Header";
+import Footer from "@/components/shared/Footer";
+import AISearchInput from "@/components/ai/AISearchInput";
+import apiClient, { ecommerceAPI, ordersAPI } from "@/services/api";
+import type { BackendSearchResult } from "@/types";
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { toast } from "sonner";
+// moving the hardcoded files - > to fetch the source from the backend
 export default function EcommercePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<BackendSearchResult | null>(null);
@@ -25,7 +30,10 @@ export default function EcommercePage() {
     if (!query) return;
     setIsLoading(true);
     try {
-      const resp = await apiClient.post<BackendSearchResult>('/search/shopping', { query });
+      const resp = await apiClient.post<BackendSearchResult>(
+        "/search/shopping",
+        { query }
+      );
       setResult(resp.data);
     } catch {
       setResult(null);
@@ -69,7 +77,8 @@ export default function EcommercePage() {
               🛍️ Shop Smart, Save More
             </h1>
             <p className="text-xl text-white/90 mb-8">
-              Find the best products at the lowest prices across Amazon, Flipkart, Myntra, and more
+              Find the best products at the lowest prices across Amazon,
+              Flipkart, Myntra, and more
             </p>
             <div className="max-w-xl">
               <AISearchInput
@@ -87,20 +96,20 @@ export default function EcommercePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               {
-                icon: '⚡',
-                title: 'Instant Comparison',
-                description: 'Compare prices across all platforms in seconds',
+                icon: "⚡",
+                title: "Instant Comparison",
+                description: "Compare prices across all platforms in seconds",
               },
-// need to fetch it from the api/ llm service
+              // need to fetch it from the api/ llm service
               {
-                icon: '🎟️',
-                title: 'Auto Coupon Apply',
-                description: 'We apply the best coupons automatically',
+                icon: "🎟️",
+                title: "Auto Coupon Apply",
+                description: "We apply the best coupons automatically",
               },
               {
-                icon: '📉',
-                title: 'Price Tracking',
-                description: 'Get notified when prices drop',
+                icon: "📉",
+                title: "Price Tracking",
+                description: "Get notified when prices drop",
               },
             ].map((feature, idx) => (
               <motion.div
@@ -113,7 +122,9 @@ export default function EcommercePage() {
               >
                 <div className="text-4xl mb-4">{feature.icon}</div>
                 <h3 className="font-bold mb-2">{feature.title}</h3>
-                <p className="text-sm text-muted-foreground">{feature.description}</p>
+                <p className="text-sm text-muted-foreground">
+                  {feature.description}
+                </p>
               </motion.div>
             ))}
           </div>
@@ -123,9 +134,13 @@ export default function EcommercePage() {
       {/* Products */}
       <section className="py-12">
         <div className="container">
-          <h2 className="text-3xl font-bold mb-2">{result ? 'Search Results' : 'Trending Products'}</h2>
+          <h2 className="text-3xl font-bold mb-2">
+            {result ? "Search Results" : "Trending Products"}
+          </h2>
           <p className="text-sm text-muted-foreground mb-8">
-            {isLoading ? 'Searching…' : 'Compare prices across platforms and open checkout links.'}
+            {isLoading
+              ? "Searching…"
+              : "Compare prices across platforms and open checkout links."}
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {(result?.items ?? []).map((product, idx) => (
@@ -162,11 +177,12 @@ export default function EcommercePage() {
                     <p className="text-2xl font-bold text-orange-600">
                       ₹{product.finalPrice.amount.toLocaleString()}
                     </p>
-                    {product.listPrice?.amount && product.listPrice.amount > product.finalPrice.amount && (
-                      <p className="text-sm text-muted-foreground line-through">
-                        ₹{product.listPrice.amount.toLocaleString()}
-                      </p>
-                    )}
+                    {product.listPrice?.amount &&
+                      product.listPrice.amount > product.finalPrice.amount && (
+                        <p className="text-sm text-muted-foreground line-through">
+                          ₹{product.listPrice.amount.toLocaleString()}
+                        </p>
+                      )}
                   </div>
 
                   <p className="text-xs text-muted-foreground mb-4">
@@ -179,25 +195,36 @@ export default function EcommercePage() {
                       onClick={async () => {
                         try {
                           await ordersAPI.createOrder({
-                            domain: 'ecommerce',
+                            domain: "ecommerce",
                             provider: product.provider,
                             title: product.name,
                             itemUrl: product.itemUrl,
-                            amount: { currency: 'INR', amount: Math.max(1, Math.round(product.finalPrice.amount)) },
+                            amount: {
+                              currency: "INR",
+                              amount: Math.max(
+                                1,
+                                Math.round(product.finalPrice.amount)
+                              ),
+                            },
                             metadata: { productId: product.id },
                           });
-                          toast.success('Added to orders.');
+                          toast.success("Added to orders.");
                         } catch {
-                          toast.message('Checkout link opened.', { description: 'Log in to save orders.' });
+                          toast.message("Checkout link opened.", {
+                            description: "Log in to save orders.",
+                          });
                         } finally {
-                          window.open(product.itemUrl, '_blank');
+                          window.open(product.itemUrl, "_blank");
                         }
                       }}
                     >
                       <ShoppingCart className="w-4 h-4 mr-2" />
                       Checkout
                     </Button>
-                    <Button variant="outline" onClick={() => openComparison(product.id)}>
+                    <Button
+                      variant="outline"
+                      onClick={() => openComparison(product.id)}
+                    >
                       <BarChart3 className="w-4 h-4 mr-2" />
                       Compare
                     </Button>
@@ -216,20 +243,32 @@ export default function EcommercePage() {
           <DialogHeader>
             <DialogTitle>Price comparison</DialogTitle>
           </DialogHeader>
-          {!compare && <div className="text-sm text-muted-foreground">Could not load comparison.</div>}
+          {!compare && (
+            <div className="text-sm text-muted-foreground">
+              Could not load comparison.
+            </div>
+          )}
           {compare && (
             <div className="space-y-3">
-              {compare.comparisons.map((c) => (
+              {compare.comparisons.map(c => (
                 <div
                   key={c.provider}
                   className={`flex items-center justify-between rounded-lg border px-4 py-3 ${
-                    compare.best?.provider === c.provider ? 'border-amber-300 bg-amber-50' : 'border-amber-100'
+                    compare.best?.provider === c.provider
+                      ? "border-amber-300 bg-amber-50"
+                      : "border-amber-100"
                   }`}
                 >
                   <div className="font-medium">{c.provider}</div>
                   <div className="flex items-center gap-3">
-                    <div className="font-semibold">₹{Number(c.price).toLocaleString()}</div>
-                    <Button size="sm" variant="outline" onClick={() => window.open(c.itemUrl, '_blank')}>
+                    <div className="font-semibold">
+                      ₹{Number(c.price).toLocaleString()}
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => window.open(c.itemUrl, "_blank")}
+                    >
                       Open
                     </Button>
                   </div>

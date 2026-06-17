@@ -21,7 +21,7 @@ export default function ContactPage() {
   const [submitting, setSubmitting] = useState(false);
 
   const update = (key: "name" | "email" | "message", value: string) => {
-    setForm((prev) => ({ ...prev, [key]: value }));
+    setForm(prev => ({ ...prev, [key]: value }));
   };
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -32,7 +32,7 @@ export default function ContactPage() {
     }
     setSubmitting(true);
     try {
-      await new Promise((r) => setTimeout(r, 650));
+      await new Promise(r => setTimeout(r, 650));
       toast.success("Message sent. We’ll get back to you soon.");
       setForm({ name: "", email: "", message: "" });
     } finally {
@@ -70,7 +70,12 @@ export default function ContactPage() {
           </div>
 
           <div className="container relative py-16 md:py-24">
-            <motion.div variants={container} initial="hidden" animate="visible" className="max-w-3xl">
+            <motion.div
+              variants={container}
+              initial="hidden"
+              animate="visible"
+              className="max-w-3xl"
+            >
               <motion.p
                 variants={item}
                 className="inline-flex items-center rounded-full bg-amber-100/70 px-4 py-2 text-sm font-semibold text-amber-900"
@@ -83,8 +88,12 @@ export default function ContactPage() {
               >
                 Let’s talk.
               </motion.h1>
-              <motion.p variants={item} className="mt-6 text-lg md:text-xl text-muted-foreground leading-relaxed">
-                Have feedback, partnership ideas, or need help? Send a message and we’ll respond.
+              <motion.p
+                variants={item}
+                className="mt-6 text-lg md:text-xl text-muted-foreground leading-relaxed"
+              >
+                Have feedback, partnership ideas, or need help? Send a message
+                and we’ll respond.
               </motion.p>
             </motion.div>
           </div>
@@ -109,8 +118,12 @@ export default function ContactPage() {
                         <Icon className="h-5 w-5" />
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-foreground">{c.title}</p>
-                        <p className="text-sm text-muted-foreground mt-1">{c.value}</p>
+                        <p className="text-sm font-semibold text-foreground">
+                          {c.title}
+                        </p>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {c.value}
+                        </p>
                       </div>
                     </div>
                   </motion.div>
@@ -125,38 +138,47 @@ export default function ContactPage() {
                 viewport={{ once: true }}
                 className="rounded-2xl border border-amber-100 bg-white p-8 shadow-sm"
               >
-                <h2 className="text-2xl font-bold text-foreground">Send a message</h2>
+                <h2 className="text-2xl font-bold text-foreground">
+                  Send a message
+                </h2>
                 <p className="text-sm text-muted-foreground mt-2">
-                  Share as much detail as you can. We typically reply within 1–2 business days.
+                  Share as much detail as you can. We typically reply within 1–2
+                  business days.
                 </p>
 
                 <form onSubmit={onSubmit} className="mt-6 space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">Name</label>
+                    <label className="block text-sm font-medium text-foreground mb-2">
+                      Name
+                    </label>
                     <input
                       value={form.name}
-                      onChange={(e) => update("name", e.target.value)}
+                      onChange={e => update("name", e.target.value)}
                       placeholder="Your name"
                       className="w-full px-4 py-3 rounded-xl border border-amber-100 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none transition-all bg-white"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">Email</label>
+                    <label className="block text-sm font-medium text-foreground mb-2">
+                      Email
+                    </label>
                     <input
                       type="email"
                       value={form.email}
-                      onChange={(e) => update("email", e.target.value)}
+                      onChange={e => update("email", e.target.value)}
                       placeholder="you@example.com"
                       className="w-full px-4 py-3 rounded-xl border border-amber-100 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none transition-all bg-white"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">Message</label>
+                    <label className="block text-sm font-medium text-foreground mb-2">
+                      Message
+                    </label>
                     <textarea
                       value={form.message}
-                      onChange={(e) => update("message", e.target.value)}
+                      onChange={e => update("message", e.target.value)}
                       rows={6}
                       placeholder="Tell us what you need..."
                       className="w-full px-4 py-3 rounded-xl border border-amber-100 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none transition-all bg-white resize-none"
@@ -180,24 +202,35 @@ export default function ContactPage() {
                 transition={{ delay: 0.06 }}
                 className="rounded-2xl border border-amber-100 bg-white p-8 shadow-sm"
               >
-                <h2 className="text-2xl font-bold text-foreground">Support hours</h2>
+                <h2 className="text-2xl font-bold text-foreground">
+                  Support hours
+                </h2>
                 <div className="mt-5 space-y-3">
                   {[
                     { k: "Mon–Fri", v: "10:00 – 18:00" },
                     { k: "Sat", v: "11:00 – 15:00" },
                     { k: "Sun", v: "Closed" },
-                  ].map((row) => (
-                    <div key={row.k} className="flex items-center justify-between rounded-xl border border-amber-100 bg-amber-50/40 px-4 py-3">
-                      <p className="text-sm font-semibold text-foreground">{row.k}</p>
+                  ].map(row => (
+                    <div
+                      key={row.k}
+                      className="flex items-center justify-between rounded-xl border border-amber-100 bg-amber-50/40 px-4 py-3"
+                    >
+                      <p className="text-sm font-semibold text-foreground">
+                        {row.k}
+                      </p>
                       <p className="text-sm text-muted-foreground">{row.v}</p>
                     </div>
                   ))}
                 </div>
 
                 <div className="mt-8 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 p-5 text-white">
-                  <p className="text-sm font-semibold opacity-95">For partnerships</p>
+                  <p className="text-sm font-semibold opacity-95">
+                    For partnerships
+                  </p>
                   <p className="mt-1 text-lg font-bold">partners@biome.local</p>
-                  <p className="mt-2 text-sm opacity-90">Share your company and what you’d like to build together.</p>
+                  <p className="mt-2 text-sm opacity-90">
+                    Share your company and what you’d like to build together.
+                  </p>
                 </div>
               </motion.div>
             </div>
@@ -209,4 +242,3 @@ export default function ContactPage() {
     </div>
   );
 }
-

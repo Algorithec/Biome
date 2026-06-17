@@ -10,7 +10,7 @@ export function createRateLimiter() {
     limit,
     standardHeaders: "draft-7",
     legacyHeaders: false,
-    skip: (req) => {
+    skip: req => {
       const p = (req.originalUrl || req.url || req.path || "").split("?")[0];
       if (p.includes("/rides/tiles/")) return true;
       return false;

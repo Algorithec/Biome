@@ -3,14 +3,17 @@ import { z } from "zod";
 
 const router = Router();
 
-router.get("/notification-preferences", async (_req: Request, res: Response) => {
-  res.json({
-    emailNotifications: true,
-    pushNotifications: true,
-    smsNotifications: false,
-    notificationThreshold: 10,
-  });
-});
+router.get(
+  "/notification-preferences",
+  async (_req: Request, res: Response) => {
+    res.json({
+      emailNotifications: true,
+      pushNotifications: true,
+      smsNotifications: false,
+      notificationThreshold: 10,
+    });
+  }
+);
 
 router.put("/notification-preferences", async (req: Request, res: Response) => {
   const parsed = z
@@ -23,7 +26,9 @@ router.put("/notification-preferences", async (req: Request, res: Response) => {
     .safeParse(req.body);
 
   if (!parsed.success) {
-    res.status(400).json({ error: "INVALID_BODY", details: parsed.error.flatten() });
+    res
+      .status(400)
+      .json({ error: "INVALID_BODY", details: parsed.error.flatten() });
     return;
   }
 
@@ -31,4 +36,3 @@ router.put("/notification-preferences", async (req: Request, res: Response) => {
 });
 
 export default router;
-

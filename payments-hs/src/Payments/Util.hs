@@ -7,8 +7,6 @@ module Payments.Util
   )
 where
 
-import Data.ByteString (ByteString)
-import qualified Data.ByteString.Char8 as BS
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
@@ -32,4 +30,3 @@ headerText :: HeaderName -> RequestHeaders -> Maybe Text
 headerText name headers = do
   v <- lookup name headers
   pure (TE.decodeUtf8 v)
-

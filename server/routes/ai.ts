@@ -16,7 +16,9 @@ router.post("/recommendations", async (req: Request, res: Response) => {
     .safeParse(req.body);
 
   if (!parsed.success) {
-    res.status(400).json({ error: "INVALID_BODY", details: parsed.error.flatten() });
+    res
+      .status(400)
+      .json({ error: "INVALID_BODY", details: parsed.error.flatten() });
     return;
   }
 
@@ -26,7 +28,7 @@ router.post("/recommendations", async (req: Request, res: Response) => {
     domain,
     filters: parsed.data.preferences,
   });
-  const items = providerResults.flatMap((r) => r.items);
+  const items = providerResults.flatMap(r => r.items);
   const ai = await aiService.generateRecommendation(parsed.data.query, items);
 
   res.json(ai);
@@ -41,7 +43,9 @@ router.get("/price-prediction", async (req: Request, res: Response) => {
     .safeParse(req.query);
 
   if (!parsed.success) {
-    res.status(400).json({ error: "INVALID_QUERY", details: parsed.error.flatten() });
+    res
+      .status(400)
+      .json({ error: "INVALID_QUERY", details: parsed.error.flatten() });
     return;
   }
 
@@ -63,7 +67,9 @@ router.get("/review-summary", async (req: Request, res: Response) => {
     .safeParse(req.query);
 
   if (!parsed.success) {
-    res.status(400).json({ error: "INVALID_QUERY", details: parsed.error.flatten() });
+    res
+      .status(400)
+      .json({ error: "INVALID_QUERY", details: parsed.error.flatten() });
     return;
   }
 
@@ -77,4 +83,3 @@ router.get("/review-summary", async (req: Request, res: Response) => {
 });
 
 export default router;
-

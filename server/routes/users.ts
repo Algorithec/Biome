@@ -46,11 +46,15 @@ router.put("/profile", authRequired(), async (req: Request, res: Response) => {
     .safeParse(req.body);
 
   if (!parsed.success) {
-    res.status(400).json({ error: "INVALID_BODY", details: parsed.error.flatten() });
+    res
+      .status(400)
+      .json({ error: "INVALID_BODY", details: parsed.error.flatten() });
     return;
   }
 
-  const updated = await userRepo.updateById(req.ctx!.userId!, { name: parsed.data.name });
+  const updated = await userRepo.updateById(req.ctx!.userId!, {
+    name: parsed.data.name,
+  });
   if (!updated) {
     res.status(404).json({ error: "USER_NOT_FOUND" });
     return;
@@ -68,18 +72,28 @@ router.put("/profile", authRequired(), async (req: Request, res: Response) => {
   });
 });
 
-router.put("/preferences", authRequired(), async (req: Request, res: Response) => {
-  const parsed = z.record(z.string(), z.unknown()).safeParse(req.body);
-  if (!parsed.success) {
-    res.status(400).json({ error: "INVALID_BODY" });
-    return;
+router.put(
+  "/preferences",
+  authRequired(),
+  async (req: Request, res: Response) => {
+    const parsed = z.record(z.string(), z.unknown()).safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: "INVALID_BODY" });
+      return;
+    }
+    const updated = await userRepo.updateById(req.ctx!.userId!, {
+      preferences: parsed.data,
+    });
+    res.json({ success: true, preferences: parsed.data, user: updated });
   }
-  const updated = await userRepo.updateById(req.ctx!.userId!, { preferences: parsed.data });
-  res.json({ success: true, preferences: parsed.data, user: updated });
-});
+);
 
-router.get("/purchases", authRequired(), async (_req: Request, res: Response) => {
-  res.json({ items: [] });
-});
+router.get(
+  "/purchases",
+  authRequired(),
+  async (_req: Request, res: Response) => {
+    res.json({ items: [] });
+  }
+);
 
 export default router;

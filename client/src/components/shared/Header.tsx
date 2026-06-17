@@ -1,8 +1,8 @@
-import { motion } from 'framer-motion';
-import { Link } from 'wouter';
-import { Button } from '@/components/ui/button';
-import { Menu, X, Bell, User } from 'lucide-react';
-import { useState } from 'react';
+import { motion } from "framer-motion";
+import { Link } from "wouter";
+import { Button } from "@/components/ui/button";
+import { Menu, X, Bell, User } from "lucide-react";
+import { useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,48 +10,48 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from "@/components/ui/dropdown-menu";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navItems = [
-    { label: 'Home', href: '/' },
-    { label: 'Search', href: '/search' },
-    { label: 'Shop', href: '/ecommerce' },
-    { label: 'Food', href: '/food' },
-    { label: 'Rides', href: '/rides' },
-    { label: 'About', href: '/about' },
-    { label: 'Contact', href: '/contact' },
-    { label: 'Dashboard', href: '/dashboard' },
+    { label: "Home", href: "/" },
+    { label: "Search", href: "/search" },
+    { label: "Shop", href: "/ecommerce" },
+    { label: "Food", href: "/food" },
+    { label: "Rides", href: "/rides" },
+    { label: "About", href: "/about" },
+    { label: "Contact", href: "/contact" },
+    { label: "Dashboard", href: "/dashboard" },
   ];
 
   const notifications = [
     {
-      id: 'n1',
-      app: 'Biome',
-      title: 'Price drop detected',
-      message: 'Gaming Laptop Pro is ₹2,100 cheaper right now.',
-      time: 'now',
-      icon: '⚡',
+      id: "n1",
+      app: "Biome",
+      title: "Price drop detected",
+      message: "Gaming Laptop Pro is ₹2,100 cheaper right now.",
+      time: "now",
+      icon: "⚡",
       unread: true,
     },
     {
-      id: 'n2',
-      app: 'Deals',
-      title: 'Coupon applied',
-      message: 'We stacked 2 offers on your last search.',
-      time: '2m',
-      icon: '🎟️',
+      id: "n2",
+      app: "Deals",
+      title: "Coupon applied",
+      message: "We stacked 2 offers on your last search.",
+      time: "2m",
+      icon: "🎟️",
       unread: true,
     },
     {
-      id: 'n3',
-      app: 'Updates',
-      title: 'New domain added',
-      message: 'More results available for your next search.',
-      time: '1h',
-      icon: '🟦',
+      id: "n3",
+      app: "Updates",
+      title: "New domain added",
+      message: "More results available for your next search.",
+      time: "1h",
+      icon: "🟦",
       unread: false,
     },
   ];
@@ -76,7 +76,7 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-8">
-            {navItems.map((item) => (
+            {navItems.map(item => (
               <Link
                 key={item.href}
                 href={item.href}
@@ -116,7 +116,7 @@ export default function Header() {
                 </div>
                 <DropdownMenuSeparator className="bg-amber-100" />
                 <div className="flex flex-col gap-2 p-2">
-                  {notifications.map((n) => (
+                  {notifications.map(n => (
                     <DropdownMenuItem
                       key={n.id}
                       className="p-0 cursor-pointer focus:bg-transparent"
@@ -191,7 +191,7 @@ export default function Header() {
             className="md:hidden pb-4 border-t border-amber-100"
           >
             <nav className="flex flex-col gap-2 pt-4">
-              {navItems.map((item) => (
+              {navItems.map(item => (
                 <Link
                   key={item.href}
                   href={item.href}

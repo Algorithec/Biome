@@ -93,13 +93,14 @@ declare global {
 
 const FORGE_API_KEY = import.meta.env.VITE_FRONTEND_FORGE_API_KEY;
 const FORGE_BASE_URL =
-  import.meta.env.VITE_FRONTEND_FORGE_API_URL || "https://forge.butterfly-effect.dev";
+  import.meta.env.VITE_FRONTEND_FORGE_API_URL ||
+  "https://forge.butterfly-effect.dev";
 const MAPS_PROXY_URL = `${FORGE_BASE_URL}/v1/maps/proxy`;
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 const GOOGLE_MAP_ID = import.meta.env.VITE_GOOGLE_MAP_ID;
 
 function loadMapScript() {
-  return new Promise<boolean>((resolve) => {
+  return new Promise<boolean>(resolve => {
     const apiKey = FORGE_API_KEY || GOOGLE_MAPS_API_KEY;
     if (!apiKey) {
       resolve(false);
@@ -107,7 +108,9 @@ function loadMapScript() {
     }
 
     const script = document.createElement("script");
-    const srcBase = FORGE_API_KEY ? `${MAPS_PROXY_URL}/maps/api/js` : "https://maps.googleapis.com/maps/api/js";
+    const srcBase = FORGE_API_KEY
+      ? `${MAPS_PROXY_URL}/maps/api/js`
+      : "https://maps.googleapis.com/maps/api/js";
     script.src = `${srcBase}?key=${apiKey}&v=weekly&libraries=marker,places,geocoding,geometry,routes`;
     script.async = true;
     script.crossOrigin = "anonymous";
@@ -172,13 +175,16 @@ export function MapView({
     <div
       ref={mapContainer}
       className={cn(
-        isReady ? "w-full h-[500px]" : "w-full h-[500px] flex items-center justify-center rounded-xl bg-muted/30",
+        isReady
+          ? "w-full h-[500px]"
+          : "w-full h-[500px] flex items-center justify-center rounded-xl bg-muted/30",
         className
       )}
     >
       {!isReady && (
         <div className="text-sm text-muted-foreground px-6 text-center">
-          Google Maps is not configured. Set VITE_GOOGLE_MAPS_API_KEY (or VITE_FRONTEND_FORGE_API_KEY).
+          Google Maps is not configured. Set VITE_GOOGLE_MAPS_API_KEY (or
+          VITE_FRONTEND_FORGE_API_KEY).
         </div>
       )}
     </div>
@@ -230,16 +236,22 @@ export function OsmMapView({
       maxZoom: 20,
       attribution: "&copy; OpenStreetMap contributors",
     });
-    const primary = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 19,
-      subdomains: ["a", "b", "c"],
-      attribution: "&copy; OpenStreetMap contributors",
-    });
-    const fallback = L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
-      maxZoom: 20,
-      subdomains: ["a", "b", "c", "d"],
-      attribution: "&copy; OpenStreetMap contributors &copy; CARTO",
-    });
+    const primary = L.tileLayer(
+      "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+      {
+        maxZoom: 19,
+        subdomains: ["a", "b", "c"],
+        attribution: "&copy; OpenStreetMap contributors",
+      }
+    );
+    const fallback = L.tileLayer(
+      "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+      {
+        maxZoom: 20,
+        subdomains: ["a", "b", "c", "d"],
+        attribution: "&copy; OpenStreetMap contributors &copy; CARTO",
+      }
+    );
     let usedFallback = false;
     let tileErrors = 0;
     const handleTileError = () => {
@@ -281,5 +293,7 @@ export function OsmMapView({
     };
   }, [initialCenter.lat, initialCenter.lng, initialZoom, onMapReady]);
 
-  return <div ref={mapContainer} className={cn("w-full h-[500px]", className)} />;
+  return (
+    <div ref={mapContainer} className={cn("w-full h-[500px]", className)} />
+  );
 }

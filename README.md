@@ -1,6 +1,7 @@
 # Biome / Deepenk (Algorithec UI + TS/Express + Payments)
 
 This repo contains:
+
 - A React + Vite frontend (desktop + mobile responsive), styled to match the Algorithec design language.
 - A Node.js (TypeScript) Express backend gateway with OTP auth + Google OAuth.
 - A Haskell payments microservice (Cashfree) used via backend proxy routes.
@@ -20,6 +21,7 @@ pnpm dev:server
 ```
 
 Backend should be available at:
+
 - http://localhost:3000/api/health
 
 ### 3) Start frontend (port 3001)
@@ -29,9 +31,11 @@ pnpm dev -- --port 3001
 ```
 
 Frontend should be available at:
+
 - http://localhost:3001/
 
 Dev proxy is configured so the frontend can call:
+
 - `/api/*` → backend `http://localhost:3000`
 - `/auth/*` → backend `http://localhost:3000`
 - `/socket.io` → backend `ws://localhost:3000`
@@ -60,35 +64,42 @@ Create environment variables in your shell (or a local env file if you use one).
 - `MONGODB_URI=...` (recommended for OTP TTL + persistence)
 
 Google OAuth:
+
 - `GOOGLE_CLIENT_ID=...`
 - `GOOGLE_CLIENT_SECRET=...`
 - `GOOGLE_REDIRECT_URI=http://localhost:3000/auth/google/callback` (optional; if not set, computed from request)
 - `FRONTEND_URL=http://localhost:3001` (recommended so backend redirects back to UI correctly)
 
 OTP Senders:
+
 - SendGrid email: `SENDGRID_API_KEY=...`, `SENDGRID_FROM=...`
 - Twilio SMS: `TWILIO_ACCOUNT_SID=...`, `TWILIO_AUTH_TOKEN=...`, `TWILIO_FROM=...`
 
 Payments proxy:
+
 - `PAYMENTS_SERVICE_URL=http://localhost:4010`
 
 ### Frontend (Vite)
 
 Maps:
+
 - `VITE_GOOGLE_MAPS_API_KEY=...`
 - `VITE_GOOGLE_MAP_ID=...` (optional)
 
 Optional API origin override:
+
 - `VITE_API_URL=http://localhost:3000` (default is `/api` via dev proxy)
 
 ## Payments (Haskell / Cashfree)
 
 The Haskell service is located in `payments-hs/` and is used via backend proxy routes:
+
 - Backend proxy: `POST /api/payments/intents` → Haskell `POST /v1/payment_intents`
 - Backend proxy: `GET /api/payments/intents/:intentId` → Haskell `GET /v1/payment_intents/:intentId`
 - Webhook forwarder: `POST /api/payments/webhooks/cashfree` → Haskell `POST /v1/webhooks/cashfree`
 
 Notes:
+
 - Webhook verification depends on capturing the raw request body in the Node gateway.
 - The Haskell service includes a background reconciliation loop to update open intents.
 

@@ -37,7 +37,11 @@ function getRapidApiProviderConfig(provider: string) {
   return { host, url, menuUrl };
 }
 
-async function fetchJsonWithTimeout(url: string, headers: Record<string, string>, timeoutMs = 8000): Promise<unknown> {
+async function fetchJsonWithTimeout(
+  url: string,
+  headers: Record<string, string>,
+  timeoutMs = 8000
+): Promise<unknown> {
   const controller = new AbortController();
   const t = setTimeout(() => controller.abort(), timeoutMs);
   try {
@@ -65,7 +69,8 @@ function pickNumber(v: unknown, keys: string[]): number | undefined {
   for (const k of keys) {
     const val = o[k];
     if (typeof val === "number" && Number.isFinite(val)) return val;
-    if (typeof val === "string" && val.trim() && Number.isFinite(Number(val))) return Number(val);
+    if (typeof val === "string" && val.trim() && Number.isFinite(Number(val)))
+      return Number(val);
   }
   return undefined;
 }
@@ -87,7 +92,8 @@ function distanceKm(a: LatLng, b: LatLng) {
   const dLng = toRad(b.lng - a.lng);
   const s1 = Math.sin(dLat / 2);
   const s2 = Math.sin(dLng / 2);
-  const aa = s1 * s1 + Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * s2 * s2;
+  const aa =
+    s1 * s1 + Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * s2 * s2;
   return 2 * R * Math.asin(Math.sqrt(aa));
 }
 
@@ -112,40 +118,105 @@ async function rapidApiSearchRestaurants(input: {
   const cfg = getRapidApiProviderConfig(input.provider);
   if (!cfg.host || !cfg.url) return null;
 
-  const rawUrl = cfg.url.includes("{query}") ? cfg.url.replaceAll("{query}", encodeURIComponent(input.query)) : cfg.url;
+  const rawUrl = cfg.url.includes("{query}")
+    ? cfg.url.replaceAll("{query}", encodeURIComponent(input.query))
+    : cfg.url;
   const u = new URL(rawUrl);
-  if (!cfg.url.includes("{query}") && !u.searchParams.has("query") && !u.searchParams.has("q")) {
+  if (
+    !cfg.url.includes("{query}") &&
+    !u.searchParams.has("query") &&
+    !u.searchParams.has("q")
+  ) {
     u.searchParams.set("query", input.query);
   }
-  if (!u.searchParams.has("lat")) u.searchParams.set("lat", String(input.center.lat));
-  if (!u.searchParams.has("lng")) u.searchParams.set("lng", String(input.center.lng));
-  if (!u.searchParams.has("radius_km") && !u.searchParams.has("radiusKm")) u.searchParams.set("radius_km", String(input.radiusKm));
+  if (!u.searchParams.has("lat"))
+    u.searchParams.set("lat", String(input.center.lat));
+  if (!u.searchParams.has("lng"))
+    u.searchParams.set("lng", String(input.center.lng));
+  if (!u.searchParams.has("radius_km") && !u.searchParams.has("radiusKm"))
+    u.searchParams.set("radius_km", String(input.radiusKm));
 
-  const json = await fetchJsonWithTimeout(u.toString(), { "x-rapidapi-key": apiKey, "x-rapidapi-host": cfg.host });
+  const json = await fetchJsonWithTimeout(u.toString(), {
+    "x-rapidapi-key": apiKey,
+    "x-rapidapi-host": cfg.host,
+  });
 
   const arr =
     (Array.isArray(json) ? json : undefined) ||
-    pickArray(json, ["restaurants", "data", "items", "results", "result", "response"]);
+    pickArray(json, [
+      "restaurants",
+      "data",
+      "items",
+      "results",
+      "result",
+      "response",
+    ]);
   if (!arr) return [];
 
   const out: RestaurantResult[] = [];
   for (const x of arr) {
-    const name = pickString(x, ["name", "restaurant_name", "title"]) || `${input.query} Kitchen`;
-    const cuisinesVal = pickString(x, ["cuisine", "cuisines", "category"]) || "Food";
-    const rating = clamp(pickNumber(x, ["rating", "stars", "avg_rating", "average_rating"]) ?? 4.2, 0, 5);
-    const reviews = Math.max(0, Math.round(pickNumber(x, ["reviews", "reviewsCount", "review_count", "ratings_total"]) ?? 0));
-    const eta = clamp(Math.round(pickNumber(x, ["delivery_time", "deliveryTimeMinutes", "deliveryTime", "eta_minutes", "eta"]) ?? 30), 5, 120);
-    const fee = Math.max(0, Math.round(pickNumber(x, ["delivery_fee", "deliveryFee", "fee"]) ?? (input.provider === "Blinkit" ? 0 : 20)));
+    const name =
+      pickString(x, ["name", "restaurant_name", "title"]) ||
+      `${input.query} Kitchen`;
+    const cuisinesVal =
+      pickString(x, ["cuisine", "cuisines", "category"]) || "Food";
+    const rating = clamp(
+      pickNumber(x, ["rating", "stars", "avg_rating", "average_rating"]) ?? 4.2,
+      0,
+      5
+    );
+    const reviews = Math.max(
+      0,
+      Math.round(
+        pickNumber(x, [
+          "reviews",
+          "reviewsCount",
+          "review_count",
+          "ratings_total",
+        ]) ?? 0
+      )
+    );
+    const eta = clamp(
+      Math.round(
+        pickNumber(x, [
+          "delivery_time",
+          "deliveryTimeMinutes",
+          "deliveryTime",
+          "eta_minutes",
+          "eta",
+        ]) ?? 30
+      ),
+      5,
+      120
+    );
+    const fee = Math.max(
+      0,
+      Math.round(
+        pickNumber(x, ["delivery_fee", "deliveryFee", "fee"]) ??
+          (input.provider === "Blinkit" ? 0 : 20)
+      )
+    );
     const lat = pickNumber(x, ["lat", "latitude"]);
     const lng = pickNumber(x, ["lng", "longitude", "lon"]);
     const location =
-      typeof lat === "number" && typeof lng === "number" ? { lat, lng } : jitterLocation(input.center, input.radiusKm);
+      typeof lat === "number" && typeof lng === "number"
+        ? { lat, lng }
+        : jitterLocation(input.center, input.radiusKm);
     const dist = Number(distanceKm(input.center, location).toFixed(1));
-    const checkoutUrl = pickString(x, ["checkout_url", "checkoutUrl", "url", "link"]) || "https://example.com/checkout";
+    const checkoutUrl =
+      pickString(x, ["checkout_url", "checkoutUrl", "url", "link"]) ||
+      "https://example.com/checkout";
     const offer = pickString(x, ["offer", "offerText", "promo", "promotion"]);
 
     const externalId =
-      pickString(x, ["id", "restaurant_id", "restaurantId", "res_id", "store_id", "storeId"]) || nanoid(10);
+      pickString(x, [
+        "id",
+        "restaurant_id",
+        "restaurantId",
+        "res_id",
+        "store_id",
+        "storeId",
+      ]) || nanoid(10);
 
     out.push({
       id: `fd_${input.provider.toLowerCase()}_${externalId}`,
@@ -178,24 +249,41 @@ export class FoodService {
       ? input.providers
       : ["Swiggy", "Zomato", "Blinkit"];
 
-    const cuisines = ["North Indian", "South Indian", "Chinese", "Italian", "Hyderabadi", "Fast Food", "Desserts"];
+    const cuisines = [
+      "North Indian",
+      "South Indian",
+      "Chinese",
+      "Italian",
+      "Hyderabadi",
+      "Fast Food",
+      "Desserts",
+    ];
 
     const results: RestaurantResult[] = [];
     for (const provider of providers) {
       try {
-        const real = await rapidApiSearchRestaurants({ provider, query: input.query, center: input.center, radiusKm });
+        const real = await rapidApiSearchRestaurants({
+          provider,
+          query: input.query,
+          center: input.center,
+          radiusKm,
+        });
         if (real && real.length) {
           results.push(...real);
           continue;
         }
-      } catch {
-      }
+      } catch {}
 
       for (let i = 0; i < 6; i++) {
         const distanceKm = Number((Math.random() * radiusKm).toFixed(1));
-        const deliveryTimeMinutes = clamp(Math.round(12 + distanceKm * 6 + Math.random() * 12), 10, 60);
+        const deliveryTimeMinutes = clamp(
+          Math.round(12 + distanceKm * 6 + Math.random() * 12),
+          10,
+          60
+        );
         const rating = Number((4.1 + Math.random() * 0.8).toFixed(1));
-        const deliveryFee = provider === "Blinkit" ? 0 : Math.round(Math.random() * 40);
+        const deliveryFee =
+          provider === "Blinkit" ? 0 : Math.round(Math.random() * 40);
         const cuisine = cuisines[Math.floor(Math.random() * cuisines.length)];
         results.push({
           id: `fd_${provider.toLowerCase()}_${nanoid(10)}`,
@@ -221,11 +309,19 @@ export class FoodService {
 
   async getMenu(restaurantId: string) {
     const parts = restaurantId.split("_");
-    const providerLower = parts.length >= 3 && parts[0] === "fd" ? parts[1] : null;
-    const externalId = parts.length >= 3 && parts[0] === "fd" ? parts.slice(2).join("_") : null;
+    const providerLower =
+      parts.length >= 3 && parts[0] === "fd" ? parts[1] : null;
+    const externalId =
+      parts.length >= 3 && parts[0] === "fd" ? parts.slice(2).join("_") : null;
 
     const provider: FoodProvider | null =
-      providerLower === "swiggy" ? "Swiggy" : providerLower === "zomato" ? "Zomato" : providerLower === "blinkit" ? "Blinkit" : null;
+      providerLower === "swiggy"
+        ? "Swiggy"
+        : providerLower === "zomato"
+          ? "Zomato"
+          : providerLower === "blinkit"
+            ? "Blinkit"
+            : null;
 
     if (provider && externalId) {
       const apiKey = getRapidApiKey();
@@ -236,29 +332,59 @@ export class FoodService {
             .replaceAll("{restaurant_id}", encodeURIComponent(externalId))
             .replaceAll("{id}", encodeURIComponent(externalId));
           const u = new URL(rawUrl);
-          if (!cfg.menuUrl.includes("{restaurant_id}") && !cfg.menuUrl.includes("{id}")) {
-            if (!u.searchParams.has("restaurant_id") && !u.searchParams.has("id")) u.searchParams.set("restaurant_id", externalId);
+          if (
+            !cfg.menuUrl.includes("{restaurant_id}") &&
+            !cfg.menuUrl.includes("{id}")
+          ) {
+            if (
+              !u.searchParams.has("restaurant_id") &&
+              !u.searchParams.has("id")
+            )
+              u.searchParams.set("restaurant_id", externalId);
           }
-          const json = await fetchJsonWithTimeout(u.toString(), { "x-rapidapi-key": apiKey, "x-rapidapi-host": cfg.host });
+          const json = await fetchJsonWithTimeout(u.toString(), {
+            "x-rapidapi-key": apiKey,
+            "x-rapidapi-host": cfg.host,
+          });
           const arr =
             (Array.isArray(json) ? json : undefined) ||
-            pickArray(json, ["menu", "items", "data", "results", "result", "response"]);
+            pickArray(json, [
+              "menu",
+              "items",
+              "data",
+              "results",
+              "result",
+              "response",
+            ]);
           if (arr) {
             const items = arr
-              .map((x) => {
-                const id = pickString(x, ["id", "item_id", "itemId"]) || `m_${nanoid(8)}`;
-                const name = pickString(x, ["name", "title", "item_name", "itemName"]);
-                const price = pickNumber(x, ["price", "amount", "final_price", "selling_price"]);
+              .map(x => {
+                const id =
+                  pickString(x, ["id", "item_id", "itemId"]) ||
+                  `m_${nanoid(8)}`;
+                const name = pickString(x, [
+                  "name",
+                  "title",
+                  "item_name",
+                  "itemName",
+                ]);
+                const price = pickNumber(x, [
+                  "price",
+                  "amount",
+                  "final_price",
+                  "selling_price",
+                ]);
                 if (!name || typeof price !== "number") return null;
                 return { id: String(id), name, price: Math.round(price) };
               })
-              .filter((x): x is { id: string; name: string; price: number } => Boolean(x))
+              .filter((x): x is { id: string; name: string; price: number } =>
+                Boolean(x)
+              )
               .slice(0, 50);
 
             if (items.length) return { restaurantId, items };
           }
-        } catch {
-        }
+        } catch {}
       }
     }
 

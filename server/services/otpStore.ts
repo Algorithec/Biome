@@ -17,7 +17,12 @@ export type OtpRecord = {
 export interface OtpStore {
   create(record: OtpRecord): Promise<void>;
   get(requestId: string): Promise<OtpRecord | null>;
-  update(requestId: string, patch: Partial<Pick<OtpRecord, "otpHash" | "attemptsLeft" | "resendCount" | "expiresAt">>): Promise<void>;
+  update(
+    requestId: string,
+    patch: Partial<
+      Pick<OtpRecord, "otpHash" | "attemptsLeft" | "resendCount" | "expiresAt">
+    >
+  ): Promise<void>;
   delete(requestId: string): Promise<void>;
 }
 
@@ -32,7 +37,12 @@ export class InMemoryOtpStore implements OtpStore {
     return this.store.get(requestId) ?? null;
   }
 
-  async update(requestId: string, patch: Partial<Pick<OtpRecord, "otpHash" | "attemptsLeft" | "resendCount" | "expiresAt">>) {
+  async update(
+    requestId: string,
+    patch: Partial<
+      Pick<OtpRecord, "otpHash" | "attemptsLeft" | "resendCount" | "expiresAt">
+    >
+  ) {
     const current = this.store.get(requestId);
     if (!current) return;
     this.store.set(requestId, { ...current, ...patch });
@@ -102,7 +112,9 @@ export class MongoOtpStore implements OtpStore {
 
   async update(
     requestId: string,
-    patch: Partial<Pick<OtpRecord, "otpHash" | "attemptsLeft" | "resendCount" | "expiresAt">>
+    patch: Partial<
+      Pick<OtpRecord, "otpHash" | "attemptsLeft" | "resendCount" | "expiresAt">
+    >
   ) {
     const col = await this.collection();
     await col.updateOne({ _id: requestId }, { $set: patch });
@@ -120,4 +132,3 @@ export function createOtpStore(): OtpStore {
   }
   return new InMemoryOtpStore();
 }
-

@@ -19,4 +19,3 @@ export async function getMongoDb() {
   const c = await getMongoClient();
   return c.db(dbName);
 }
-

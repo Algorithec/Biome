@@ -28,7 +28,11 @@ function getRapidApiProviderConfig(provider: string) {
   return { host, url, detailsUrl };
 }
 
-async function fetchJsonWithTimeout(url: string, headers: Record<string, string>, timeoutMs = 8000): Promise<unknown> {
+async function fetchJsonWithTimeout(
+  url: string,
+  headers: Record<string, string>,
+  timeoutMs = 8000
+): Promise<unknown> {
   const controller = new AbortController();
   const t = setTimeout(() => controller.abort(), timeoutMs);
   try {
@@ -72,7 +76,8 @@ function pickNumber(v: unknown, keys: string[]): number | undefined {
   for (const k of keys) {
     const val = o[k];
     if (typeof val === "number" && Number.isFinite(val)) return val;
-    if (typeof val === "string" && val.trim() && Number.isFinite(Number(val))) return Number(val);
+    if (typeof val === "string" && val.trim() && Number.isFinite(Number(val)))
+      return Number(val);
   }
   return undefined;
 }
@@ -91,9 +96,11 @@ function getEbayConfig() {
   const clientId = process.env.EBAY_CLIENT_ID || "";
   const clientSecret = process.env.EBAY_CLIENT_SECRET || "";
   const env = (process.env.EBAY_ENV || "production").toLowerCase();
-  const baseUrl = env === "sandbox" ? "https://api.sandbox.ebay.com" : "https://api.ebay.com";
+  const baseUrl =
+    env === "sandbox" ? "https://api.sandbox.ebay.com" : "https://api.ebay.com";
   const marketplaceId = process.env.EBAY_MARKETPLACE_ID || "EBAY_IN";
-  const scope = process.env.EBAY_OAUTH_SCOPE || "https://api.ebay.com/oauth/api_scope";
+  const scope =
+    process.env.EBAY_OAUTH_SCOPE || "https://api.ebay.com/oauth/api_scope";
   return { clientId, clientSecret, baseUrl, marketplaceId, scope };
 }
 
@@ -102,9 +109,13 @@ let ebayTokenCache: { token: string; expiresAt: number } | null = null;
 async function ebayGetAppToken(): Promise<string | null> {
   const cfg = getEbayConfig();
   if (!cfg.clientId || !cfg.clientSecret) return null;
-  if (ebayTokenCache && ebayTokenCache.expiresAt > Date.now() + 30_000) return ebayTokenCache.token;
+  if (ebayTokenCache && ebayTokenCache.expiresAt > Date.now() + 30_000)
+    return ebayTokenCache.token;
 
-  const basic = Buffer.from(`${cfg.clientId}:${cfg.clientSecret}`, "utf8").toString("base64");
+  const basic = Buffer.from(
+    `${cfg.clientId}:${cfg.clientSecret}`,
+    "utf8"
+  ).toString("base64");
   const body = new URLSearchParams({
     grant_type: "client_credentials",
     scope: cfg.scope,
@@ -123,15 +134,18 @@ async function ebayGetAppToken(): Promise<string | null> {
     8000
   );
 
-  const obj = (json && typeof json === "object" ? (json as Record<string, unknown>) : null) as Record<
-    string,
-    unknown
-  > | null;
+  const obj = (
+    json && typeof json === "object" ? (json as Record<string, unknown>) : null
+  ) as Record<string, unknown> | null;
   const token = typeof obj?.access_token === "string" ? obj.access_token : "";
-  const expiresIn = typeof obj?.expires_in === "number" ? obj.expires_in : Number(obj?.expires_in);
+  const expiresIn =
+    typeof obj?.expires_in === "number"
+      ? obj.expires_in
+      : Number(obj?.expires_in);
   if (!token) return null;
 
-  const ttlMs = Number.isFinite(expiresIn) && expiresIn > 0 ? expiresIn * 1000 : 3600_000;
+  const ttlMs =
+    Number.isFinite(expiresIn) && expiresIn > 0 ? expiresIn * 1000 : 3600_000;
   ebayTokenCache = { token, expiresAt: Date.now() + ttlMs };
   return token;
 }
@@ -139,9 +153,15 @@ async function ebayGetAppToken(): Promise<string | null> {
 function moneyFromEbayPrice(price: unknown): Money | null {
   if (!price || typeof price !== "object") return null;
   const p = price as Record<string, unknown>;
-  const value = typeof p.value === "number" ? p.value : typeof p.value === "string" ? Number(p.value) : NaN;
+  const value =
+    typeof p.value === "number"
+      ? p.value
+      : typeof p.value === "string"
+        ? Number(p.value)
+        : NaN;
   if (!Number.isFinite(value) || value <= 0) return null;
-  const currency = typeof p.currency === "string" ? p.currency.toUpperCase() : "INR";
+  const currency =
+    typeof p.currency === "string" ? p.currency.toUpperCase() : "INR";
   const fx =
     currency === "INR"
       ? 1
@@ -155,7 +175,9 @@ function moneyFromEbayPrice(price: unknown): Money | null {
   return inr(value * fx);
 }
 
-async function ebaySearchEcommerce(input: { query: string }): Promise<NormalizedItem[] | null> {
+async function ebaySearchEcommerce(input: {
+  query: string;
+}): Promise<NormalizedItem[] | null> {
   const cfg = getEbayConfig();
   const token = await ebayGetAppToken();
   if (!token) return null;
@@ -198,10 +220,15 @@ async function ebaySearchEcommerce(input: { query: string }): Promise<Normalized
     const o = x as Record<string, unknown>;
     const id = pickString(o, ["itemId", "id"]);
     const name = pickString(o, ["title", "name"]) || input.query;
-    const url = pickString(o, ["itemWebUrl", "itemUrl", "url"]) || "https://www.ebay.com";
-    const imageUrl = pickString(o["image"], ["imageUrl"]) || pickString(o, ["imageUrl", "thumbnailImages"]);
-    const priceObj = o.price && typeof o.price === "object" ? o.price : o.currentPrice;
-    const finalPrice = moneyFromEbayPrice(priceObj) ?? inr(guessBasePrice("ecommerce"));
+    const url =
+      pickString(o, ["itemWebUrl", "itemUrl", "url"]) || "https://www.ebay.com";
+    const imageUrl =
+      pickString(o["image"], ["imageUrl"]) ||
+      pickString(o, ["imageUrl", "thumbnailImages"]);
+    const priceObj =
+      o.price && typeof o.price === "object" ? o.price : o.currentPrice;
+    const finalPrice =
+      moneyFromEbayPrice(priceObj) ?? inr(guessBasePrice("ecommerce"));
 
     items.push({
       id: id || `ebay_${nanoid(10)}`,
@@ -218,7 +245,10 @@ async function ebaySearchEcommerce(input: { query: string }): Promise<Normalized
   return items.slice(0, 12);
 }
 
-async function rapidApiSearchEcommerce(input: { provider: string; query: string }): Promise<NormalizedItem[] | null> {
+async function rapidApiSearchEcommerce(input: {
+  provider: string;
+  query: string;
+}): Promise<NormalizedItem[] | null> {
   const apiKey = getRapidApiKey();
   if (!apiKey) return null;
   const cfg = getRapidApiProviderConfig(input.provider);
@@ -226,42 +256,102 @@ async function rapidApiSearchEcommerce(input: { provider: string; query: string 
 
   const u = new URL(cfg.url);
   if (u.toString().includes("{query}")) {
-    const replaced = cfg.url.replaceAll("{query}", encodeURIComponent(input.query));
+    const replaced = cfg.url.replaceAll(
+      "{query}",
+      encodeURIComponent(input.query)
+    );
     const ur = new URL(replaced);
-    const json = await fetchJsonWithTimeout(ur.toString(), { "x-rapidapi-key": apiKey, "x-rapidapi-host": cfg.host });
+    const json = await fetchJsonWithTimeout(ur.toString(), {
+      "x-rapidapi-key": apiKey,
+      "x-rapidapi-host": cfg.host,
+    });
     return normalizeRapidApiEcomItems(json, input.provider, input.query);
   }
 
-  if (!u.searchParams.has("query") && !u.searchParams.has("q")) u.searchParams.set("query", input.query);
-  const json = await fetchJsonWithTimeout(u.toString(), { "x-rapidapi-key": apiKey, "x-rapidapi-host": cfg.host });
+  if (!u.searchParams.has("query") && !u.searchParams.has("q"))
+    u.searchParams.set("query", input.query);
+  const json = await fetchJsonWithTimeout(u.toString(), {
+    "x-rapidapi-key": apiKey,
+    "x-rapidapi-host": cfg.host,
+  });
   return normalizeRapidApiEcomItems(json, input.provider, input.query);
 }
 
-async function rapidApiGetEcommerceDetails(input: { provider: string; id: string }): Promise<NormalizedItem | null> {
+async function rapidApiGetEcommerceDetails(input: {
+  provider: string;
+  id: string;
+}): Promise<NormalizedItem | null> {
   const apiKey = getRapidApiKey();
   if (!apiKey) return null;
   const cfg = getRapidApiProviderConfig(input.provider);
   if (!cfg.host || !cfg.detailsUrl) return null;
 
-  const rawUrl = cfg.detailsUrl.replaceAll("{id}", encodeURIComponent(input.id));
+  const rawUrl = cfg.detailsUrl.replaceAll(
+    "{id}",
+    encodeURIComponent(input.id)
+  );
   const u = new URL(rawUrl);
   if (!cfg.detailsUrl.includes("{id}")) {
-    if (!u.searchParams.has("id") && !u.searchParams.has("product_id") && !u.searchParams.has("asin")) {
+    if (
+      !u.searchParams.has("id") &&
+      !u.searchParams.has("product_id") &&
+      !u.searchParams.has("asin")
+    ) {
       u.searchParams.set("id", input.id);
     }
   }
 
-  const json = await fetchJsonWithTimeout(u.toString(), { "x-rapidapi-key": apiKey, "x-rapidapi-host": cfg.host });
-  const obj = (json && typeof json === "object" ? json : null) as Record<string, unknown> | null;
+  const json = await fetchJsonWithTimeout(u.toString(), {
+    "x-rapidapi-key": apiKey,
+    "x-rapidapi-host": cfg.host,
+  });
+  const obj = (json && typeof json === "object" ? json : null) as Record<
+    string,
+    unknown
+  > | null;
 
-  const name = pickString(obj, ["name", "title", "product_title", "productTitle"]);
-  const url = pickString(obj, ["url", "link", "product_url", "productUrl", "product_link"]);
-  const img = pickString(obj, ["image", "imageUrl", "image_url", "thumbnail", "thumbnail_url"]);
+  const name = pickString(obj, [
+    "name",
+    "title",
+    "product_title",
+    "productTitle",
+  ]);
+  const url = pickString(obj, [
+    "url",
+    "link",
+    "product_url",
+    "productUrl",
+    "product_link",
+  ]);
+  const img = pickString(obj, [
+    "image",
+    "imageUrl",
+    "image_url",
+    "thumbnail",
+    "thumbnail_url",
+  ]);
   const amount =
-    pickNumber(obj, ["final_price", "price", "sale_price", "salePrice", "offer_price", "offerPrice"]) ??
-    pickNumber(pickArray(obj, ["offers"])?.[0], ["price"]);
-  const rating = pickNumber(obj, ["rating", "stars", "average_rating", "avg_rating"]);
-  const reviewsCount = pickNumber(obj, ["reviews", "reviewsCount", "ratings_total", "ratingsTotal", "reviews_total"]);
+    pickNumber(obj, [
+      "final_price",
+      "price",
+      "sale_price",
+      "salePrice",
+      "offer_price",
+      "offerPrice",
+    ]) ?? pickNumber(pickArray(obj, ["offers"])?.[0], ["price"]);
+  const rating = pickNumber(obj, [
+    "rating",
+    "stars",
+    "average_rating",
+    "avg_rating",
+  ]);
+  const reviewsCount = pickNumber(obj, [
+    "reviews",
+    "reviewsCount",
+    "ratings_total",
+    "ratingsTotal",
+    "reviews_total",
+  ]);
 
   if (!name && typeof amount !== "number" && !url) return null;
 
@@ -273,30 +363,71 @@ async function rapidApiGetEcommerceDetails(input: { provider: string; id: string
     itemUrl: url || "https://example.com/checkout",
     imageUrl: img,
     rating: typeof rating === "number" ? Number(rating.toFixed(1)) : undefined,
-    reviewsCount: typeof reviewsCount === "number" ? Math.round(reviewsCount) : undefined,
-    finalPrice: { currency: "INR", amount: Math.round(typeof amount === "number" ? amount : 999) },
+    reviewsCount:
+      typeof reviewsCount === "number" ? Math.round(reviewsCount) : undefined,
+    finalPrice: {
+      currency: "INR",
+      amount: Math.round(typeof amount === "number" ? amount : 999),
+    },
     raw: json,
   };
 }
 
-function normalizeRapidApiEcomItems(json: unknown, provider: string, query: string): NormalizedItem[] {
+function normalizeRapidApiEcomItems(
+  json: unknown,
+  provider: string,
+  query: string
+): NormalizedItem[] {
   const arr =
     (Array.isArray(json) ? json : undefined) ||
-    pickArray(json, ["products", "items", "data", "results", "result", "response"]);
+    pickArray(json, [
+      "products",
+      "items",
+      "data",
+      "results",
+      "result",
+      "response",
+    ]);
 
   if (!arr) return [];
 
   const items: NormalizedItem[] = [];
   for (const x of arr) {
-    const name = pickString(x, ["name", "title", "product_title", "productTitle"]) || query;
+    const name =
+      pickString(x, ["name", "title", "product_title", "productTitle"]) ||
+      query;
     const url =
-      pickString(x, ["url", "link", "product_url", "productUrl", "product_link"]) || "https://example.com/checkout";
+      pickString(x, [
+        "url",
+        "link",
+        "product_url",
+        "productUrl",
+        "product_link",
+      ]) || "https://example.com/checkout";
     const amount =
-      pickNumber(x, ["final_price", "price", "sale_price", "salePrice", "offer_price", "offerPrice"]) ??
+      pickNumber(x, [
+        "final_price",
+        "price",
+        "sale_price",
+        "salePrice",
+        "offer_price",
+        "offerPrice",
+      ]) ??
       pickNumber(pickArray(x, ["offers"])?.[0], ["price"]) ??
       guessBasePrice("ecommerce");
-    const rating = pickNumber(x, ["rating", "stars", "average_rating", "avg_rating"]);
-    const reviewsCount = pickNumber(x, ["reviews", "reviewsCount", "ratings_total", "ratingsTotal", "reviews_total"]);
+    const rating = pickNumber(x, [
+      "rating",
+      "stars",
+      "average_rating",
+      "avg_rating",
+    ]);
+    const reviewsCount = pickNumber(x, [
+      "reviews",
+      "reviewsCount",
+      "ratings_total",
+      "ratingsTotal",
+      "reviews_total",
+    ]);
 
     items.push({
       id: `${provider.toLowerCase()}_${nanoid(10)}`,
@@ -304,8 +435,10 @@ function normalizeRapidApiEcomItems(json: unknown, provider: string, query: stri
       provider,
       domain: "ecommerce",
       itemUrl: url,
-      rating: typeof rating === "number" ? Number(rating.toFixed(1)) : undefined,
-      reviewsCount: typeof reviewsCount === "number" ? Math.round(reviewsCount) : undefined,
+      rating:
+        typeof rating === "number" ? Number(rating.toFixed(1)) : undefined,
+      reviewsCount:
+        typeof reviewsCount === "number" ? Math.round(reviewsCount) : undefined,
       finalPrice: { currency: "INR", amount: Math.round(amount) },
     });
   }
@@ -321,7 +454,11 @@ function guessBasePrice(domain: DomainType) {
   return 65000;
 }
 
-function mockItems(domain: DomainType, provider: string, query: string): NormalizedItem[] {
+function mockItems(
+  domain: DomainType,
+  provider: string,
+  query: string
+): NormalizedItem[] {
   const base = guessBasePrice(domain);
   const n = 6;
   return Array.from({ length: n }).map((_, idx) => {
@@ -347,14 +484,20 @@ function mockItems(domain: DomainType, provider: string, query: string): Normali
       finalPrice: inr(price),
       deliveryEtaMinutes,
       offersApplied: [
-        { type: "platform", label: "Platform offer", value: inr(Math.max(0, base * 0.05)) },
+        {
+          type: "platform",
+          label: "Platform offer",
+          value: inr(Math.max(0, base * 0.05)),
+        },
       ],
     };
   });
 }
 
 export class ProductService {
-  async searchAcrossProviders(input: SearchInput): Promise<ProviderSearchResult[]> {
+  async searchAcrossProviders(
+    input: SearchInput
+  ): Promise<ProviderSearchResult[]> {
     const providers =
       input.domain === "ecommerce"
         ? ["Amazon", "Flipkart", "Myntra", "eBay"]
@@ -367,33 +510,47 @@ export class ProductService {
               : ["OYO", "Booking.com", "Airbnb"];
 
     const results = await Promise.all(
-      providers.map(async (provider) => {
+      providers.map(async provider => {
         if (input.domain === "ecommerce") {
           try {
             if (provider === "eBay") {
               const real = await ebaySearchEcommerce({ query: input.query });
               if (real && real.length) return { provider, items: real };
-              return { provider, items: mockItems(input.domain, provider, input.query) };
+              return {
+                provider,
+                items: mockItems(input.domain, provider, input.query),
+              };
             }
-            const real = await rapidApiSearchEcommerce({ provider, query: input.query });
+            const real = await rapidApiSearchEcommerce({
+              provider,
+              query: input.query,
+            });
             if (real && real.length) return { provider, items: real };
           } catch {
-            return { provider, items: mockItems(input.domain, provider, input.query) };
+            return {
+              provider,
+              items: mockItems(input.domain, provider, input.query),
+            };
           }
         }
-        return { provider, items: mockItems(input.domain, provider, input.query) };
+        return {
+          provider,
+          items: mockItems(input.domain, provider, input.query),
+        };
       })
     );
 
     return results;
   }
 
-  async getDetails(id: string, provider: string): Promise<NormalizedItem | null> {
+  async getDetails(
+    id: string,
+    provider: string
+  ): Promise<NormalizedItem | null> {
     try {
       const real = await rapidApiGetEcommerceDetails({ provider, id });
       if (real) return real;
-    } catch {
-    }
+    } catch {}
     return {
       id,
       name: "Item details",
@@ -404,8 +561,13 @@ export class ProductService {
     };
   }
 
-  async getAlternatives(id: string, provider: string): Promise<NormalizedItem[]> {
-    return mockItems("ecommerce", provider, "Similar item").slice(0, 4).map((i) => ({ ...i, id: `${id}_${i.id}` }));
+  async getAlternatives(
+    id: string,
+    provider: string
+  ): Promise<NormalizedItem[]> {
+    return mockItems("ecommerce", provider, "Similar item")
+      .slice(0, 4)
+      .map(i => ({ ...i, id: `${id}_${i.id}` }));
   }
 }
 
