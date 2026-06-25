@@ -1,0 +1,174 @@
+name: Tests
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+    # Run on any path change that could affect test results
+    paths:
+      - "server/**"
+      - "shared/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "tsconfig.json"
+      - "vite.config.ts"
+      - ".github/workflows/test.yml"
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ──────────────────────────────────────────────────────────────────
+  # Unit + integration tests with coverage
+  # ──────────────────────────────────────────────────────────────────
+  unit:
+    name: Unit & Integration Tests
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [20.x, 22.x]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run tests with coverage
+        run: pnpm test:coverage
+        env:
+          NODE_ENV: test
+          JWT_SECRET: test_secret_ci_do_not_use_in_prod
+
+      # Only upload coverage once (Node 22, the primary version)
+      - name: Upload coverage report
+        if: matrix.node-version == '22.x'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ github.sha }}
+          path: coverage/
+          retention-days: 14
+
+      # Post coverage summary to PR as a comment (Node 22 only)
+      - name: Coverage summary
+        if: matrix.node-version == '22.x' && github.event_name == 'pull_request'
+        uses: davelosert/vitest-coverage-report-action@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          vite-config-path: vite.config.ts
+
+  # ──────────────────────────────────────────────────────────────────
+  # Enforce minimum coverage thresholds
+  # Fails the PR if coverage drops below the configured minimums.
+  # ──────────────────────────────────────────────────────────────────
+  coverage-gate:
+    name: Coverage Gate
+    needs: unit
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # vitest coverage thresholds are configured in vite.config.ts
+      # This step re-runs with --reporter=json to get a machine-readable exit code
+      - name: Assert coverage thresholds
+        run: pnpm test:coverage --reporter=json --coverage.thresholds.lines=60 --coverage.thresholds.functions=60 --coverage.thresholds.branches=50 --coverage.thresholds.statements=60
+        env:
+          NODE_ENV: test
+          JWT_SECRET: test_secret_ci_do_not_use_in_prod
+
+  # ──────────────────────────────────────────────────────────────────
+  # Smoke test: can the server actually start?
+  # ──────────────────────────────────────────────────────────────────
+  smoke:
+    name: Server Smoke Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Start server in background
+        run: |
+          pnpm dev:server &
+          echo "SERVER_PID=$!" >> $GITHUB_ENV
+        env:
+          PORT: 3000
+          NODE_ENV: test
+          JWT_SECRET: test_secret_ci_do_not_use_in_prod
+
+      - name: Wait for server to be ready
+        run: |
+          for i in $(seq 1 20); do
+            if curl --silent --fail http://localhost:3000/api/health; then
+              echo ""
+              echo "✅ Server is up"
+              exit 0
+            fi
+            echo "Waiting... ($i/20)"
+            sleep 2
+          done
+          echo "❌ Server did not start in time"
+          exit 1
+
+      - name: Health endpoint returns expected shape
+        run: |
+          RESPONSE=$(curl --silent http://localhost:3000/api/health)
+          echo "Response: $RESPONSE"
+          echo "$RESPONSE" | python3 -c "
+          import json, sys
+          data = json.load(sys.stdin)
+          assert data['status'] == 'ok', f'Expected status=ok, got: {data}'
+          assert 'uptime' in data, 'Missing uptime field'
+          assert 'timestamp' in data, 'Missing timestamp field'
+          print('✅ Health response shape is correct')
+          "
+
+      - name: Auth config endpoint is reachable
+        run: |
+          STATUS=$(curl --silent --output /dev/null --write-out "%{http_code}" http://localhost:3000/auth/config)
+          echo "Status: $STATUS"
+          [ "$STATUS" = "200" ] && echo "✅ /auth/config OK" || (echo "❌ Expected 200, got $STATUS" && exit 1)
+
+      - name: Stop server
+        if: always()
+        run: kill $SERVER_PID 2>/dev/null || true
