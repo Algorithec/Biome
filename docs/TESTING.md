@@ -19,10 +19,10 @@ pnpm test --coverage
 
 ## Existing tests
 
-| File | What it covers |
-|------|---------------|
-| `server/services/cache.test.ts` | In-memory cache set/get/TTL/eviction |
-| `server/services/llmClient.test.ts` | LLM client response parsing |
+| File                                | What it covers                       |
+| ----------------------------------- | ------------------------------------ |
+| `server/services/cache.test.ts`     | In-memory cache set/get/TTL/eviction |
+| `server/services/llmClient.test.ts` | LLM client response parsing          |
 
 ## Test structure conventions
 
@@ -81,7 +81,7 @@ function makeToken(payload: object) {
 // Then pass as cookie or header:
 request(app)
   .get("/api/users/profile")
-  .set("Cookie", `deepenk_token=${makeToken({ id: "user_1" })}`)
+  .set("Cookie", `deepenk_token=${makeToken({ id: "user_1" })}`);
 ```
 
 ## Mocking external services
@@ -94,7 +94,9 @@ import { vi } from "vitest";
 vi.mock("../repositories", () => ({
   userRepo: {
     getById: vi.fn().mockResolvedValue({ id: "user_1", name: "Alice" }),
-    upsertByEmail: vi.fn().mockResolvedValue({ id: "user_1", email: "a@b.com" }),
+    upsertByEmail: vi
+      .fn()
+      .mockResolvedValue({ id: "user_1", email: "a@b.com" }),
   },
   orderRepo: {
     create: vi.fn(),
@@ -107,18 +109,18 @@ vi.mock("../repositories", () => ({
 
 ## Test coverage targets
 
-| Domain | Priority | Notes |
-|--------|----------|-------|
-| Auth routes | High | OTP flow, JWT signing, cookie handling |
-| Orders routes | High | Status transitions, payment intent creation |
-| Search service | High | Domain routing, result deduplication |
-| Health | Medium | Trivial but good smoke test |
-| Rides routes | Medium | Geocode, route, fare estimate |
-| Food routes | Medium | Search, menu, delivery options |
-| Payments proxy | Medium | Header forwarding, body passthrough |
-| AI routes | Low | Stub/mock LLM responses |
-| Cache service | Done ✅ | Already covered |
-| LLM client | Done ✅ | Already covered |
+| Domain         | Priority | Notes                                       |
+| -------------- | -------- | ------------------------------------------- |
+| Auth routes    | High     | OTP flow, JWT signing, cookie handling      |
+| Orders routes  | High     | Status transitions, payment intent creation |
+| Search service | High     | Domain routing, result deduplication        |
+| Health         | Medium   | Trivial but good smoke test                 |
+| Rides routes   | Medium   | Geocode, route, fare estimate               |
+| Food routes    | Medium   | Search, menu, delivery options              |
+| Payments proxy | Medium   | Header forwarding, body passthrough         |
+| AI routes      | Low      | Stub/mock LLM responses                     |
+| Cache service  | Done ✅  | Already covered                             |
+| LLM client     | Done ✅  | Already covered                             |
 
 ## Testing the SSE endpoint
 

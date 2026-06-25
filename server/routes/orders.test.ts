@@ -24,13 +24,17 @@ vi.mock("../repositories", () => {
   return {
     orderRepo: {
       create: vi.fn().mockResolvedValue(order),
-      getById: vi.fn().mockImplementation((id: string) =>
-        id === "order_1" ? Promise.resolve(order) : Promise.resolve(null)
-      ),
+      getById: vi
+        .fn()
+        .mockImplementation((id: string) =>
+          id === "order_1" ? Promise.resolve(order) : Promise.resolve(null)
+        ),
       listByUser: vi.fn().mockResolvedValue([order]),
-      updateById: vi.fn().mockImplementation((_id: string, patch: object) =>
-        Promise.resolve({ ...order, ...patch })
-      ),
+      updateById: vi
+        .fn()
+        .mockImplementation((_id: string, patch: object) =>
+          Promise.resolve({ ...order, ...patch })
+        ),
     },
     userRepo: {
       getById: vi.fn().mockResolvedValue({

@@ -121,15 +121,13 @@ describe("GET /api/search/suggestions", () => {
 
 describe("POST /api/search/track-click", () => {
   it("records a click", async () => {
-    const res = await request(makeApp())
-      .post("/api/search/track-click")
-      .send({
-        searchId: "srch_1",
-        itemName: "Apple iPhone 15",
-        itemUrl: "https://amazon.in/iphone15",
-        provider: "Amazon",
-        price: 74999,
-      });
+    const res = await request(makeApp()).post("/api/search/track-click").send({
+      searchId: "srch_1",
+      itemName: "Apple iPhone 15",
+      itemUrl: "https://amazon.in/iphone15",
+      provider: "Amazon",
+      price: 74999,
+    });
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);

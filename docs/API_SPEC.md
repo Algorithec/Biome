@@ -12,9 +12,11 @@ Auth is via an `httpOnly` cookie `deepenk_token` (set on login) **or** an `Autho
 ## Auth — `/auth`
 
 ### `GET /auth/config`
+
 Returns which auth methods are configured.
 
 **Response**
+
 ```json
 {
   "google": true,
@@ -26,6 +28,7 @@ Returns which auth methods are configured.
 ---
 
 ### `GET /auth/google`
+
 Redirects the browser to Google's OAuth consent screen. Sets a `deepenk_google_state` cookie for CSRF protection.
 
 **Redirect** → `accounts.google.com`
@@ -33,12 +36,13 @@ Redirects the browser to Google's OAuth consent screen. Sets a `deepenk_google_s
 ---
 
 ### `GET /auth/google/callback`
+
 OAuth callback. Validates state, exchanges code for a Google profile, upserts the user, sets `deepenk_token` cookie.
 
-| Query param | Type | Required |
-|-------------|------|----------|
-| `code` | string | ✅ |
-| `state` | string | ✅ |
+| Query param | Type   | Required |
+| ----------- | ------ | -------- |
+| `code`      | string | ✅       |
+| `state`     | string | ✅       |
 
 **Redirect** → `<FRONTEND_URL>/profile`
 
@@ -47,9 +51,11 @@ OAuth callback. Validates state, exchanges code for a Google profile, upserts th
 ---
 
 ### `POST /auth/login`
+
 Direct email login (no OTP, dev-friendly).
 
 **Body**
+
 ```json
 {
   "email": "user@example.com",
@@ -58,27 +64,33 @@ Direct email login (no OTP, dev-friendly).
 ```
 
 **Response**
+
 ```json
 {
   "user": { "id": "...", "email": "user@example.com", "name": "Alice" },
   "token": "<jwt>"
 }
 ```
+
 Also sets `deepenk_token` cookie.
 
 ---
 
 ### `POST /auth/otp/request`
+
 Request an OTP to be sent via email or SMS.
 
 **Body**
+
 ```json
 {
   "channel": "email",
   "email": "user@example.com"
 }
 ```
+
 or
+
 ```json
 {
   "channel": "phone",
@@ -87,6 +99,7 @@ or
 ```
 
 **Response**
+
 ```json
 {
   "requestId": "otp_abc123",
@@ -94,22 +107,25 @@ or
   "devOtp": "123456"
 }
 ```
+
 `devOtp` is only present in non-production environments.
 
 **Errors**
 
-| Code | Status | Meaning |
-|------|--------|---------|
-| `MISSING_DESTINATION` | 400 | email/phone missing for the chosen channel |
-| `EMAIL_SENDER_NOT_CONFIGURED` | 501 | SendGrid env vars missing (prod) |
-| `SMS_SENDER_NOT_CONFIGURED` | 501 | Twilio env vars missing (prod) |
+| Code                          | Status | Meaning                                    |
+| ----------------------------- | ------ | ------------------------------------------ |
+| `MISSING_DESTINATION`         | 400    | email/phone missing for the chosen channel |
+| `EMAIL_SENDER_NOT_CONFIGURED` | 501    | SendGrid env vars missing (prod)           |
+| `SMS_SENDER_NOT_CONFIGURED`   | 501    | Twilio env vars missing (prod)             |
 
 ---
 
 ### `POST /auth/otp/resend`
+
 Resend an existing OTP request.
 
 **Body**
+
 ```json
 { "requestId": "otp_abc123" }
 ```
@@ -119,9 +135,11 @@ Resend an existing OTP request.
 ---
 
 ### `POST /auth/otp/verify`
+
 Verify an OTP and receive a JWT.
 
 **Body**
+
 ```json
 {
   "requestId": "otp_abc123",
@@ -130,12 +148,14 @@ Verify an OTP and receive a JWT.
 ```
 
 **Response**
+
 ```json
 {
   "user": { "id": "...", "email": "user@example.com" },
   "token": "<jwt>"
 }
 ```
+
 Also sets `deepenk_token` cookie.
 
 **Errors** — 400 with OTP-specific error message string.
@@ -143,6 +163,7 @@ Also sets `deepenk_token` cookie.
 ---
 
 ### `POST /auth/logout`
+
 Clears the `deepenk_token` cookie.
 
 **Response** `{ "success": true }`
@@ -150,11 +171,13 @@ Clears the `deepenk_token` cookie.
 ---
 
 ### `GET /auth/me`
+
 Returns the current user if authenticated, or `{ "user": null }` if not.
 
 **Auth** optional
 
 **Response**
+
 ```json
 {
   "user": {
@@ -169,6 +192,7 @@ Returns the current user if authenticated, or `{ "user": null }` if not.
 ---
 
 ### `GET /auth/me/required`
+
 Same as `/auth/me` but returns `401` if not authenticated.
 
 **Auth** required
@@ -178,9 +202,11 @@ Same as `/auth/me` but returns `401` if not authenticated.
 ## Health — `/api/health`
 
 ### `GET /api/health`
+
 Liveness check.
 
 **Response**
+
 ```json
 {
   "status": "ok",
@@ -212,24 +238,31 @@ All search endpoints accept the same body shape:
 **Auth** optional on all search routes (saves history when authenticated).
 
 ### `POST /api/search`
+
 Universal search across all domains.
 
 ### `POST /api/search/shopping`
+
 Scoped to `ecommerce` domain.
 
 ### `POST /api/search/food`
+
 Scoped to `food` domain.
 
 ### `POST /api/search/rides`
+
 Scoped to `rides` domain.
 
 ### `POST /api/search/travel`
+
 Scoped to `travel` domain.
 
 ### `POST /api/search/stays`
+
 Scoped to `hospitality` domain.
 
 **Response** (all search endpoints)
+
 ```json
 {
   "searchId": "srch_xyz",
@@ -253,14 +286,16 @@ Scoped to `hospitality` domain.
 ---
 
 ### `GET /api/search/suggestions`
+
 Autocomplete suggestions.
 
-| Query param | Type | Required |
-|-------------|------|----------|
-| `q` | string | ✅ |
-| `domain` | DomainEnum | ❌ |
+| Query param | Type       | Required |
+| ----------- | ---------- | -------- |
+| `q`         | string     | ✅       |
+| `domain`    | DomainEnum | ❌       |
 
 **Response**
+
 ```json
 {
   "q": "iph",
@@ -271,11 +306,13 @@ Autocomplete suggestions.
 ---
 
 ### `POST /api/search/track-click`
+
 Records a user click on a search result.
 
 **Auth** optional
 
 **Body**
+
 ```json
 {
   "searchId": "srch_xyz",
@@ -291,13 +328,14 @@ Records a user click on a search result.
 ---
 
 ### `GET /api/search/history`
+
 Returns the authenticated user's past searches.
 
 **Auth** required
 
-| Query param | Type | Default |
-|-------------|------|---------|
-| `limit` | number (1-100) | 20 |
+| Query param | Type           | Default |
+| ----------- | -------------- | ------- |
+| `limit`     | number (1-100) | 20      |
 
 **Response** `{ "items": [ ... ] }`
 
@@ -306,9 +344,11 @@ Returns the authenticated user's past searches.
 ## Food — `/api/food`
 
 ### `POST /api/food/search`
+
 Search for restaurants near a location.
 
 **Body**
+
 ```json
 {
   "query": "pizza",
@@ -317,6 +357,7 @@ Search for restaurants near a location.
   "providers": ["Swiggy", "Zomato"]
 }
 ```
+
 `radiusKm` defaults to 5, max 25. `providers` defaults to all.
 
 **Response** — aggregated restaurant list from requested providers.
@@ -324,20 +365,23 @@ Search for restaurants near a location.
 ---
 
 ### `GET /api/food/restaurants/:restaurantId/menu`
+
 Fetch a restaurant's menu.
 
-| Path param | Type | Required |
-|------------|------|----------|
-| `restaurantId` | string | ✅ |
+| Path param     | Type   | Required |
+| -------------- | ------ | -------- |
+| `restaurantId` | string | ✅       |
 
 **Response** — restaurant menu with categories and items.
 
 ---
 
 ### `POST /api/food/delivery-options`
+
 Get delivery options for a restaurant to a location.
 
 **Body**
+
 ```json
 {
   "restaurantId": "rest_abc",
@@ -352,6 +396,7 @@ Get delivery options for a restaurant to a location.
 ## Rides — `/api/rides`
 
 ### `GET /api/rides/tiles/:z/:x/:y.png`
+
 Proxy for OpenStreetMap tiles (avoids CORS in browser). Falls back to CartoCDN.
 
 **Response** — `image/png`
@@ -359,13 +404,15 @@ Proxy for OpenStreetMap tiles (avoids CORS in browser). Falls back to CartoCDN.
 ---
 
 ### `GET /api/rides/geocode`
+
 Forward geocoding (address → coordinates).
 
-| Query param | Type | Required |
-|-------------|------|----------|
-| `q` | string (2-200 chars) | ✅ |
+| Query param | Type                 | Required |
+| ----------- | -------------------- | -------- |
+| `q`         | string (2-200 chars) | ✅       |
 
 **Response**
+
 ```json
 {
   "items": [
@@ -382,28 +429,31 @@ Forward geocoding (address → coordinates).
 ---
 
 ### `GET /api/rides/reverse`
+
 Reverse geocoding (coordinates → address).
 
-| Query param | Type | Required |
-|-------------|------|----------|
-| `lat` | number | ✅ |
-| `lng` | number | ✅ |
+| Query param | Type   | Required |
+| ----------- | ------ | -------- |
+| `lat`       | number | ✅       |
+| `lng`       | number | ✅       |
 
 **Response** — Nominatim reverse geocode object.
 
 ---
 
 ### `GET /api/rides/route`
+
 Calculate a driving route between two points (via OSRM).
 
-| Query param | Type | Required |
-|-------------|------|----------|
-| `pickupLat` | number | ✅ |
-| `pickupLng` | number | ✅ |
-| `dropoffLat` | number | ✅ |
-| `dropoffLng` | number | ✅ |
+| Query param  | Type   | Required |
+| ------------ | ------ | -------- |
+| `pickupLat`  | number | ✅       |
+| `pickupLng`  | number | ✅       |
+| `dropoffLat` | number | ✅       |
+| `dropoffLng` | number | ✅       |
 
 **Response**
+
 ```json
 {
   "geometry": { "type": "LineString", "coordinates": [[77.59, 12.97], ...] },
@@ -415,9 +465,11 @@ Calculate a driving route between two points (via OSRM).
 ---
 
 ### `POST /api/rides/fare-estimate`
+
 Get fare estimates across ride providers.
 
 **Body**
+
 ```json
 {
   "pickup": { "lat": 12.9716, "lng": 77.5946 },
@@ -430,21 +482,24 @@ Get fare estimates across ride providers.
 ---
 
 ### `GET /api/rides/available`
+
 Get available ride types near a location.
 
-| Query param | Type | Required |
-|-------------|------|----------|
-| `lat` | number | ✅ |
-| `lng` | number | ✅ |
+| Query param | Type   | Required |
+| ----------- | ------ | -------- |
+| `lat`       | number | ✅       |
+| `lng`       | number | ✅       |
 
 **Response** — available vehicle categories and estimated ETAs.
 
 ---
 
 ### `POST /api/rides/book`
+
 Book a ride by quote ID.
 
 **Body**
+
 ```json
 { "quoteId": "quote_abc123" }
 ```
@@ -458,9 +513,11 @@ Book a ride by quote ID.
 **Auth** required on all order endpoints.
 
 ### `POST /api/orders`
+
 Create a new order.
 
 **Body**
+
 ```json
 {
   "domain": "ecommerce",
@@ -482,17 +539,19 @@ Order status on creation: `CREATED` (or `PAYMENT_PENDING` if `paymentIntentId` i
 ---
 
 ### `GET /api/orders`
+
 List the authenticated user's orders.
 
-| Query param | Type | Default |
-|-------------|------|---------|
-| `limit` | number (1-100) | 50 |
+| Query param | Type           | Default |
+| ----------- | -------------- | ------- |
+| `limit`     | number (1-100) | 50      |
 
 **Response** `{ "items": [ { order } ] }`
 
 ---
 
 ### `GET /api/orders/:orderId`
+
 Get a single order.
 
 **Response** `{ "order": { ... } }`
@@ -502,23 +561,26 @@ Get a single order.
 ---
 
 ### `POST /api/orders/:orderId/cancel`
+
 Cancel an order.
 
 **Errors**
 
-| Code | Status |
-|------|--------|
-| `ORDER_NOT_FOUND` | 404 |
-| `ORDER_ALREADY_CONFIRMED` | 409 |
+| Code                      | Status |
+| ------------------------- | ------ |
+| `ORDER_NOT_FOUND`         | 404    |
+| `ORDER_ALREADY_CONFIRMED` | 409    |
 
 Already-cancelled orders return 200 with the existing order (idempotent).
 
 ---
 
 ### `POST /api/orders/:orderId/payment-intent`
+
 Create a Cashfree payment intent for an order.
 
 **Body**
+
 ```json
 {
   "customerPhone": "+919876543210",
@@ -532,6 +594,7 @@ Create a Cashfree payment intent for an order.
 All fields optional — falls back to authenticated user's profile values. `customerPhone` is required (either in body or on user profile).
 
 **Response**
+
 ```json
 {
   "order": { "status": "PAYMENT_PENDING", ... },
@@ -547,13 +610,13 @@ All fields optional — falls back to authenticated user's profile values. `cust
 
 **Errors**
 
-| Code | Status |
-|------|--------|
-| `ORDER_NOT_FOUND` | 404 |
-| `ORDER_CANCELLED` | 409 |
-| `ORDER_ALREADY_CONFIRMED` | 409 |
-| `MISSING_CUSTOMER_PHONE` | 400 |
-| `PAYMENT_INTENT_BAD_RESPONSE` | 502 |
+| Code                          | Status |
+| ----------------------------- | ------ |
+| `ORDER_NOT_FOUND`             | 404    |
+| `ORDER_CANCELLED`             | 409    |
+| `ORDER_ALREADY_CONFIRMED`     | 409    |
+| `MISSING_CUSTOMER_PHONE`      | 400    |
+| `PAYMENT_INTENT_BAD_RESPONSE` | 502    |
 
 ---
 
@@ -562,22 +625,26 @@ All fields optional — falls back to authenticated user's profile values. `cust
 Thin proxy to the Haskell payments microservice.
 
 ### `GET /api/payments/health`
+
 Health check of the payments service.
 
 ---
 
 ### `POST /api/payments/intents`
+
 Create a payment intent directly (without an order record).
 
 **Auth** optional
 
 **Headers**
+
 - `Idempotency-Key` (optional) — forwarded to Haskell service
 
 **Body**
+
 ```json
 {
-  "money": { "amount": 499.00, "currency": "INR" },
+  "money": { "amount": 499.0, "currency": "INR" },
   "customer": {
     "customerId": "user_abc",
     "customerPhone": "+919876543210",
@@ -595,6 +662,7 @@ Create a payment intent directly (without an order record).
 ---
 
 ### `GET /api/payments/intents/:intentId`
+
 Fetch a payment intent status.
 
 **Auth** optional
@@ -604,9 +672,11 @@ Fetch a payment intent status.
 ---
 
 ### `POST /api/payments/webhooks/cashfree`
+
 Cashfree webhook receiver. Forwards raw body and Cashfree headers to Haskell service for signature verification.
 
 **Headers forwarded**
+
 - `x-webhook-timestamp`
 - `x-webhook-signature`
 - `x-webhook-version`
@@ -620,9 +690,11 @@ Cashfree webhook receiver. Forwards raw body and Cashfree headers to Haskell ser
 ## AI — `/api/ai`
 
 ### `POST /api/ai/recommendations`
+
 Get AI-powered product/service recommendations.
 
 **Body**
+
 ```json
 {
   "query": "best budget phone under 20000",
@@ -632,6 +704,7 @@ Get AI-powered product/service recommendations.
 ```
 
 **Response**
+
 ```json
 {
   "recommendations": [ ... ],
@@ -642,14 +715,16 @@ Get AI-powered product/service recommendations.
 ---
 
 ### `GET /api/ai/price-prediction`
+
 Get a price prediction for a product.
 
-| Query param | Type | Required |
-|-------------|------|----------|
-| `productId` | string | ✅ |
-| `platform` | string | ✅ |
+| Query param | Type   | Required |
+| ----------- | ------ | -------- |
+| `productId` | string | ✅       |
+| `platform`  | string | ✅       |
 
 **Response**
+
 ```json
 {
   "productId": "...",
@@ -663,14 +738,16 @@ Get a price prediction for a product.
 ---
 
 ### `GET /api/ai/review-summary`
+
 Get an AI-generated review summary for an item.
 
-| Query param | Type | Required |
-|-------------|------|----------|
-| `itemId` | string | ✅ |
-| `domain` | DomainEnum | ❌ |
+| Query param | Type       | Required |
+| ----------- | ---------- | -------- |
+| `itemId`    | string     | ✅       |
+| `domain`    | DomainEnum | ❌       |
 
 **Response**
+
 ```json
 {
   "itemId": "...",
@@ -686,11 +763,13 @@ Get an AI-generated review summary for an item.
 ## Users — `/api/users`
 
 ### `GET /api/users/profile`
+
 Get the current user's profile.
 
 **Auth** optional (returns guest profile if unauthenticated)
 
 **Response**
+
 ```json
 {
   "id": "user_abc",
@@ -705,11 +784,13 @@ Get the current user's profile.
 ---
 
 ### `PUT /api/users/profile`
+
 Update profile fields.
 
 **Auth** required
 
 **Body**
+
 ```json
 { "name": "Alice Updated" }
 ```
@@ -719,6 +800,7 @@ Update profile fields.
 ---
 
 ### `PUT /api/users/preferences`
+
 Update user preferences (arbitrary key-value).
 
 **Auth** required
@@ -730,11 +812,13 @@ Update user preferences (arbitrary key-value).
 ---
 
 ### `GET /api/users/rewards`
+
 Get cashback / rewards balance.
 
 **Auth** optional
 
 **Response**
+
 ```json
 {
   "totalCashback": 0,
@@ -747,6 +831,7 @@ Get cashback / rewards balance.
 ---
 
 ### `GET /api/users/purchases`
+
 Get purchase history.
 
 **Auth** required
@@ -758,15 +843,17 @@ Get purchase history.
 ## History — `/api/history`
 
 ### `GET /api/history`
+
 Combined search and click history.
 
 **Auth** required
 
-| Query param | Type | Default |
-|-------------|------|---------|
-| `limit` | number (1-100) | 30 |
+| Query param | Type           | Default |
+| ----------- | -------------- | ------- |
+| `limit`     | number (1-100) | 30      |
 
 **Response**
+
 ```json
 {
   "searches": [ ... ],
@@ -779,11 +866,13 @@ Combined search and click history.
 ## Ecommerce — `/api/ecommerce`
 
 ### `POST /api/ecommerce/search`
+
 Simplified ecommerce search (no auth, minimal response shape).
 
 **Body** `{ "query": "laptop" }`
 
 **Response**
+
 ```json
 {
   "query": "laptop",
@@ -801,14 +890,16 @@ Simplified ecommerce search (no auth, minimal response shape).
 
 ---
 
-## Realtime — SSE — `/api/sse` *(replacing WebSocket)*
+## Realtime — SSE — `/api/sse` _(replacing WebSocket)_
 
 ### `GET /api/sse/price-alerts`
+
 Subscribe to price alert events.
 
 **Auth** required
 
 **Response headers**
+
 ```
 Content-Type: text/event-stream
 Cache-Control: no-cache
@@ -818,12 +909,14 @@ Connection: keep-alive
 **Events**
 
 `price-alert`
+
 ```
 event: price-alert
 data: {"alertId":"...","itemId":"...","newPrice":1999,"platform":"Amazon"}
 ```
 
 `ping` (keepalive, every 30s)
+
 ```
 event: ping
 data: {}
@@ -840,12 +933,12 @@ data: {}
 { "error": "INVALID_BODY", "details": { "fieldErrors": { "email": ["Invalid email"] }, "formErrors": [] } }
 ```
 
-| HTTP Status | Typical meaning |
-|-------------|----------------|
-| 400 | Validation failure or bad request |
-| 401 | Not authenticated |
-| 404 | Resource not found |
-| 409 | Conflict (e.g. order already confirmed) |
-| 501 | Feature not configured (e.g. SMS sender missing) |
-| 502 | Upstream service failure |
-| 500 | Internal error |
+| HTTP Status | Typical meaning                                  |
+| ----------- | ------------------------------------------------ |
+| 400         | Validation failure or bad request                |
+| 401         | Not authenticated                                |
+| 404         | Resource not found                               |
+| 409         | Conflict (e.g. order already confirmed)          |
+| 501         | Feature not configured (e.g. SMS sender missing) |
+| 502         | Upstream service failure                         |
+| 500         | Internal error                                   |

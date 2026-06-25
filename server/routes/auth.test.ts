@@ -108,7 +108,9 @@ describe("POST /auth/login", () => {
   });
 
   it("returns 400 for missing email", async () => {
-    const res = await request(makeApp()).post("/auth/login").send({ name: "Alice" });
+    const res = await request(makeApp())
+      .post("/auth/login")
+      .send({ name: "Alice" });
     expect(res.status).toBe(400);
     expect(res.body.error).toBe("INVALID_BODY");
   });

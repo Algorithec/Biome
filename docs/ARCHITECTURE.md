@@ -44,13 +44,13 @@ The previous Socket.IO / WebSocket dependency has been **removed**. Realtime pri
 
 ### Why SSE over WebSocket?
 
-| | WebSocket | SSE |
-|---|---|---|
-| Direction | Bi-directional | Server → client only |
-| Protocol | Upgrade handshake | Plain HTTP |
-| Proxy/CDN friendly | Sometimes | Yes |
-| Reconnect built-in | Manual | Automatic |
-| Use case fit | Chat, gaming | Alerts, feeds, progress |
+|                    | WebSocket         | SSE                     |
+| ------------------ | ----------------- | ----------------------- |
+| Direction          | Bi-directional    | Server → client only    |
+| Protocol           | Upgrade handshake | Plain HTTP              |
+| Proxy/CDN friendly | Sometimes         | Yes                     |
+| Reconnect built-in | Manual            | Automatic               |
+| Use case fit       | Chat, gaming      | Alerts, feeds, progress |
 
 Price alerts are purely server-push: the server detects a price drop and notifies the client. SSE is a better fit, simpler to operate, and works through all standard HTTP infrastructure.
 
@@ -93,14 +93,14 @@ Owns all inbound HTTP, auth, rate limiting, request validation, and orchestratio
 
 The repositories layer (`server/repositories/`) abstracts storage. Currently supports **MongoDB** (preferred) and an **in-memory fallback** for zero-config dev. Collections:
 
-| Collection | Purpose |
-|------------|---------|
-| `users` | Identity, email/phone, preferences |
-| `otps` | One-time passwords with TTL |
-| `orders` | Cross-domain order records |
-| `searches` | Search history |
-| `clicks` | Click-through tracking |
-| `priceAlerts` | User-configured price thresholds |
+| Collection    | Purpose                            |
+| ------------- | ---------------------------------- |
+| `users`       | Identity, email/phone, preferences |
+| `otps`        | One-time passwords with TTL        |
+| `orders`      | Cross-domain order records         |
+| `searches`    | Search history                     |
+| `clicks`      | Click-through tracking             |
+| `priceAlerts` | User-configured price thresholds   |
 
 ## Auth flow
 
@@ -124,6 +124,7 @@ JWT payload: `{ id, email?, phone?, name?, iat, exp }`
 ## Search engine
 
 `searchEngine.search()` in `server/services/searchEngine.ts` is the central aggregation point. It:
+
 1. Accepts a `query`, `domain`, optional `filters`, and optional `userId`
 2. Fans out to domain-specific product/service providers
 3. Ranks and deduplicates results
@@ -157,20 +158,21 @@ server/index.ts
 
 ## External dependencies
 
-| External | Used for |
-|----------|---------|
+| External                   | Used for                                                |
+| -------------------------- | ------------------------------------------------------- |
 | OpenStreetMap tile servers | Map tiles (proxied via `/api/rides/tiles/:z/:x/:y.png`) |
-| Nominatim | Geocoding and reverse geocoding |
-| OSRM (project-osrm.org) | Route calculation |
-| Cashfree | Payment processing (via Haskell service) |
-| SendGrid | OTP email delivery |
-| Twilio | OTP SMS delivery |
-| Google OAuth | Social login |
-| Google Maps (frontend) | Frontend map display (optional) |
+| Nominatim                  | Geocoding and reverse geocoding                         |
+| OSRM (project-osrm.org)    | Route calculation                                       |
+| Cashfree                   | Payment processing (via Haskell service)                |
+| SendGrid                   | OTP email delivery                                      |
+| Twilio                     | OTP SMS delivery                                        |
+| Google OAuth               | Social login                                            |
+| Google Maps (frontend)     | Frontend map display (optional)                         |
 
 ## Error conventions
 
 All API errors return JSON:
+
 ```json
 { "error": "ERROR_CODE", "details": { ... } }
 ```

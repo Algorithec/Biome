@@ -2,16 +2,17 @@
 
 Welcome to the Biome documentation. Use the links below to navigate.
 
-| Doc | Purpose |
-|-----|---------|
+| Doc                               | Purpose                                      |
+| --------------------------------- | -------------------------------------------- |
 | [Architecture](./ARCHITECTURE.md) | System design, service boundaries, data flow |
-| [API Spec](./API_SPEC.md) | Full REST API reference for all endpoints |
-| [Testing Guide](./TESTING.md) | How to run, write, and extend tests |
-| [Environment Variables](./ENV.md) | All env vars with defaults and notes |
+| [API Spec](./API_SPEC.md)         | Full REST API reference for all endpoints    |
+| [Testing Guide](./TESTING.md)     | How to run, write, and extend tests          |
+| [Environment Variables](./ENV.md) | All env vars with defaults and notes         |
 
 ## Quick orientation
 
 Biome is a **multi-domain commerce aggregator** (food, rides, ecommerce, travel, stays) with:
+
 - A **React + Vite** frontend
 - A **Node.js / TypeScript / Express** API gateway
 - A **Haskell** payments microservice (Cashfree)
